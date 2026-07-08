@@ -1,0 +1,1 @@
+export { default } from '@/src/app/home/settings/message-sections/page';

@@ -1,0 +1,117 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Pencil } from "lucide-react";
+
+const formatDate = (dateString) => {
+  if (!dateString) return "---";
+  try {
+    return new Date(dateString).toLocaleDateString("ar-EG", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return dateString;
+  }
+};
+
+const getStatusLabel = (status) => {
+  if (status === "published") return "منشور";
+  if (status === "draft") return "مسودة";
+  return status || "---";
+};
+
+const getStatusClass = (status) => {
+  if (status === "published") return "bg-[#E6FFE6] text-[#10B981]";
+  if (status === "draft") return "bg-[#FFF4E6] text-[#F59E0B]";
+  return "bg-[#F5F5F5] text-[#A3A3A3]";
+};
+
+export default function BlogDetails({ blog }) {
+  const publishAt = blog?.publish_at || blog?.timePublish;
+  const metaTitle = blog?.meta_title || blog?.metaTitle;
+  const metaDescription = blog?.meta_description || blog?.metaDescription;
+  const isActive = blog?.is_active === 1 || blog?.is_active === true || blog?.isActive === 1 || blog?.isActive === true;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${getStatusClass(blog?.status)}`}>
+              {getStatusLabel(blog?.status)}
+            </span>
+            <span
+              className={`px-3 py-1 rounded-full text-[11px] font-bold ${
+                isActive ? "bg-[#E6F0FF] text-[#3B82F6]" : "bg-[#F5F5F5] text-[#A3A3A3]"
+              }`}
+            >
+              {isActive ? "نشط" : "غير نشط"}
+            </span>
+          </div>
+          <h3 className="text-[24px] font-black text-black">{blog?.title}</h3>
+          {blog?.slug && (
+            <p className="text-[13px] text-[#A3A3A3]" dir="ltr">
+              {blog.slug}
+            </p>
+          )}
+        </div>
+
+        <Link href={`/home/settings/blogs/${blog?.id}/edit`}>
+          <Button className="bg-brand-main hover:bg-brand-hover text-white h-11 px-5 rounded-full font-bold flex items-center gap-2">
+            <Pencil className="size-4" />
+            تعديل المقال
+          </Button>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4">
+          <p className="text-[12px] text-[#A3A3A3] mb-1">تاريخ النشر</p>
+          <p className="text-[14px] font-bold text-black">{formatDate(publishAt)}</p>
+        </div>
+        {metaTitle && (
+          <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4 md:col-span-2">
+            <p className="text-[12px] text-[#A3A3A3] mb-1">عنوان SEO</p>
+            <p className="text-[14px] font-medium text-black">{metaTitle}</p>
+          </div>
+        )}
+      </div>
+
+      {metaDescription && (
+        <div className="rounded-[16px] border border-[#EEEEEE] bg-[#FAFAFA] p-4">
+          <p className="text-[12px] text-[#A3A3A3] mb-1">وصف SEO</p>
+          <p className="text-[14px] text-[#4D4D4D]">{metaDescription}</p>
+        </div>
+      )}
+
+      {blog?.image && (
+        <div className="relative w-full max-h-[420px] aspect-[16/9] rounded-[20px] overflow-hidden border border-[#EEEEEE]">
+          <Image src={blog.image} alt={blog.title || "blog image"} fill className="object-cover" />
+        </div>
+      )}
+
+      <div className="rounded-[20px] border border-[#EEEEEE] bg-white p-6">
+        <p className="text-[14px] font-bold text-black mb-4">محتوى المقال</p>
+        <div
+          className="prose prose-sm max-w-none text-[#4D4D4D] leading-relaxed [&_img]:max-w-full [&_img]:rounded-xl"
+          dangerouslySetInnerHTML={{ __html: blog?.description || "" }}
+        />
+      </div>
+
+      <div className="flex justify-start pt-2">
+        <Link href="/home/settings/blogs">
+          <Button variant="outline" className="h-11 px-5 rounded-full flex items-center gap-2">
+            <ArrowRight className="size-4" />
+            العودة للمدونة
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
