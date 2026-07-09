@@ -8,6 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import PaymentLinkDialog from "@/components/Orders/shared/payment-link-dialog";
 import {
   CONTRACT_PAID_API,
@@ -24,6 +25,7 @@ export default function CreateContractPaidDialog() {
   const [open, setOpen] = useState(false);
   const [customerMobile, setCustomerMobile] = useState("");
   const [amount, setAmount] = useState("");
+  const [notes, setNotes] = useState("");
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentLink, setPaymentLink] = useState({ paymentUrl: "", cartAmount: null });
   const queryClient = useQueryClient();
@@ -31,6 +33,7 @@ export default function CreateContractPaidDialog() {
   const resetForm = () => {
     setCustomerMobile("");
     setAmount("");
+    setNotes("");
   };
 
   const { mutate, isPending } = useMutation({
@@ -38,6 +41,7 @@ export default function CreateContractPaidDialog() {
       axiosInstance.post(CONTRACT_PAID_API, {
         customer_mobile: customerMobile.trim(),
         amount: Number(amount),
+        notes: notes.trim(),
       }),
     onSuccess: (res) => {
       const { paymentUrl, cartAmount } = extractPaymentFromResponse(res.data);
@@ -97,7 +101,7 @@ export default function CreateContractPaidDialog() {
           <DialogHeader>
             <div className="flex items-center justify-between border-b pb-6">
               <h2 className="text-xl font-bold">إنشاء عقد مدفوع</h2>
-              <Button variant="ghost" onClick={() => setOpen(false)}>
+              <Button  onClick={() => setOpen(false)}>
                 <X className="w-4 h-4" />
               </Button>
             </div>
@@ -111,7 +115,7 @@ export default function CreateContractPaidDialog() {
                   placeholder="05xxxxxxxx"
                   value={customerMobile}
                   onChange={(e) => setCustomerMobile(e.target.value)}
-                  className="h-12"
+                  className="h-12 rounded-full border-[#E5E7EB] bg-white px-5 shadow-sm focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-brand-main"
                   dir="ltr"
                 />
               </div>
@@ -127,22 +131,32 @@ export default function CreateContractPaidDialog() {
                   placeholder="500.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="h-12"
+                  className="h-12 rounded-full border-[#E5E7EB] bg-white px-5 shadow-sm focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-brand-main"
                   dir="ltr"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">ملاحظات</label>
+                <Textarea
+                  placeholder="أضف ملاحظات إضافية هنا..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="min-h-[110px] rounded-[24px] border-[#E5E7EB] bg-white px-5 py-3 text-right shadow-sm resize-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-brand-main"
                 />
               </div>
 
               <Button
                 disabled={isPending || !customerMobile.trim() || !amount}
                 onClick={handleSubmit}
-                className="mx-auto block h-12 w-full bg-brand-hover gap-2"
+                className="mx-auto flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-hover text-base font-bold text-white shadow-sm transition-all hover:bg-brand-hover/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPending ? (
-                  <Loader2 className="animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
                   <>
                     <Link2 className="size-4" />
-                    إنشاء + رابط الدفع
+                    إنشاء رابط الدفع
                   </>
                 )}
               </Button>

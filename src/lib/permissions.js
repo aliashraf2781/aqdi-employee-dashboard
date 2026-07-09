@@ -187,6 +187,7 @@ export const SIDEBAR_NAV = [
       },
     ],
   },
+
   {
     group: 'الموظفيــن والأدوار',
     items: [
@@ -199,10 +200,18 @@ export const SIDEBAR_NAV = [
       },
     ],
   },
+
   {
     group: 'إعــدادت النظام',
     items: [
       { label: 'الاعــدادات', href: '/home/settings', section: PERMISSION_SECTIONS.settings },
+    ],
+  },
+  {
+    group: 'المحتوي ',
+    items: [
+      { label: 'الصفحه الرئيسيه', href: '/home/content/home', section: PERMISSION_SECTIONS.all_requests },
+      { label: 'صفحة من نحن ', href: '/home/content/about', section: PERMISSION_SECTIONS.all_requests },
     ],
   },
 ];
