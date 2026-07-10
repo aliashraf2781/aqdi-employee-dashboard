@@ -169,16 +169,6 @@ export const SIDEBAR_NAV = [
         href: '/home/incolpleted-orders-analysis/total',
         section: PERMISSION_SECTIONS.incomplete_request,
       },
-      {
-        label: 'طلـب واتســـاب مكتمـــل',
-        href: '/home/completed-whatsapp',
-        section: PERMISSION_SECTIONS.completed_whatsapp_request,
-      },
-      {
-        label: 'طلـب واتسـاب  غير مكتمل',
-        href: '/home/incompleted-whatsapp',
-        section: PERMISSION_SECTIONS.incomplete_whatsapp_request,
-      },
       { label: 'طلـب مستــرجع', href: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request },
       {
         label: 'تصنيــف الطلبـــــات',

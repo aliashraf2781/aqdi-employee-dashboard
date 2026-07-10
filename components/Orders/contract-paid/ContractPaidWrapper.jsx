@@ -4,11 +4,13 @@ import CreateContractPaidDialog from "@/components/Orders/contract-paid/create-c
 import {
   CONTRACT_PAID_API,
   CONTRACT_PAID_QUERY_KEY,
+  exportContractPaidToExcel,
   extractContractPaidRecord,
   extractPaymentFromResponse,
   normalizeContractPaidList,
 } from "@/components/Orders/contract-paid/contract-paid-utils";
 import PaymentLinkDialog from "@/components/Orders/shared/payment-link-dialog";
+import { fetchAllPaginatedOrders } from "@/components/Orders/shared/orders-export";
 import Header from "@/components/home/Header";
 import Loader from "@/components/home/loader";
 import OrdersPagination from "@/components/Orders/shared/orders-pagination";
@@ -30,7 +32,7 @@ import greenRial from "@/public/images/greenRial.svg";
 import waIcon from "@/public/images/waIcon.svg";
 import { axiosInstance } from "@/src/utils/axios";
 import { useQuery } from "@tanstack/react-query";
-import { Link2, Loader2, RefreshCw, Search, X } from "lucide-react";
+import { FileSpreadsheet, Link2, Loader2, RefreshCw, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -72,6 +74,7 @@ export default function ContractPaidWrapper() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentLink, setPaymentLink] = useState({ paymentUrl: "", cartAmount: null });
   const [loadingPaymentId, setLoadingPaymentId] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
@@ -122,6 +125,39 @@ export default function ContractPaidWrapper() {
     setPaidFilter("");
     setCurrentPage(1);
     refetch();
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const buildUrl = (page) => {
+        const params = new URLSearchParams({ page: String(page) });
+
+        if (debouncedSearchQuery) {
+          params.set("search", debouncedSearchQuery);
+        }
+
+        if (paidFilter !== "") {
+          params.set("is_paid", paidFilter);
+        }
+
+        return `${CONTRACT_PAID_API}?${params.toString()}`;
+      };
+
+      const rows = await fetchAllPaginatedOrders(buildUrl);
+      const exported = exportContractPaidToExcel(rows, { filename: "العقود-المدفوعة" });
+
+      if (!exported) {
+        toast.error("لا توجد بيانات للتصدير");
+        return;
+      }
+
+      toast.success("تم تصدير البيانات بنجاح");
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "تعذر تصدير البيانات");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleOpenPaymentLink = async (record) => {
@@ -220,6 +256,21 @@ export default function ContractPaidWrapper() {
             ))}
           </SelectContent>
         </Select>
+
+        <button
+          type="button"
+          onClick={handleExport}
+          disabled={isExporting}
+          className="h-[46px] px-5 rounded-full border border-[#10B981] bg-white text-[#10B981] hover:bg-[#10B981] hover:text-white font-bold text-[14px] transition-all shadow-sm flex items-center gap-2 shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+          title="تصدير Excel"
+        >
+          {isExporting ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <FileSpreadsheet className="size-4" />
+          )}
+          {isExporting ? "جاري التصدير..." : "تصدير Excel"}
+        </button>
 
         <button
           type="button"

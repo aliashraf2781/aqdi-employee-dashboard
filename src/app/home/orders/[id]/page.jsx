@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "next/navigation";
 import Header from "@/components/home/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +18,7 @@ import OrderDetailsActions from "@/components/Orders/single-order/order-details-
 import LeaseRenewalOrderView from "@/components/Orders/single-order/lease-renewal/lease-renewal-order-view";
 import Loader from "@/components/home/loader";
 import { SingleOrderProvider, useSingleOrderContext } from "@/components/Orders/single-order/single-order-context";
+import { useSidebarStore } from "@/src/stores/sidebar-store";
 
 const tabStyle =
   "max-lg:flex-1 flex items-center text-xs gap-1 py-3 px-4 bg-gray-200 rounded-full border border-gray-300 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:border-transparent";
@@ -25,6 +26,13 @@ const tabStyle =
 function OrderDetailsContent() {
   const { orderData, isLoading, isError } = useSingleOrderContext();
   const { id } = useParams();
+  const { setOrderId, setCommentPanelOpen } = useSidebarStore();
+
+  useEffect(() => {
+    setOrderId(id);
+    setCommentPanelOpen(true);
+    return () => setCommentPanelOpen(false);
+  }, [id, setOrderId, setCommentPanelOpen]);
 
   const isLeaseRenewal =
     orderData?.contract_summary?.instrument_type_key === "lease_renewal";

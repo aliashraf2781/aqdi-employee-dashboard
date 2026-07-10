@@ -1,4 +1,5 @@
 import SideData from '@/components/home/SideData';
+import CommentPanel from '@/components/comment/comment-panel';
 import RoutePermissionGuard from '@/components/auth/RoutePermissionGuard';
 import React from 'react'
 
@@ -12,6 +13,7 @@ export default function Profile({ children }) {
                         {children}
                     </RoutePermissionGuard>
                 </div>
+                <CommentPanel />
             </div>
     )
 }
