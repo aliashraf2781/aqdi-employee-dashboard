@@ -16,8 +16,8 @@ import { LuLogOut } from "react-icons/lu";
 import { RiMoneyDollarCircleFill, RiPentagonFill } from "react-icons/ri";
 import { TbClipboardListFilled } from "react-icons/tb";
 import { useSidebarStore } from "@/src/stores/sidebar-store";
+import { useUnreceivedOrdersWatcher } from "@/src/hooks/use-unreceived-orders-watcher";
 import NotificationList from "../notifiction/notification-list";
-import CommentList from "../comment/comment-list";
 
 const NAV_ICONS = {
   '/home/analysis': RiPentagonFill,
@@ -60,6 +60,7 @@ export default function SideData() {
   const { logout, logoutLoading } = useLogout();
   const { displayedPart, isSidebarOpen, setSidebarOpen, toggleSidebar } = useSidebarStore();
   const { can, isReady } = usePermissions();
+  useUnreceivedOrdersWatcher();
 
   useEffect(() => {
     const media = window.matchMedia(DESKTOP_MEDIA);
@@ -156,8 +157,6 @@ export default function SideData() {
         )}
 
         {displayedPart === 'notification' && <NotificationList />}
-
-        {displayedPart === 'comment' && <CommentList />}
       </div>
     </>
   );

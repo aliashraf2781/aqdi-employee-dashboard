@@ -87,11 +87,9 @@ const DeedOwners = ({ data }) => {
   }).filter(Boolean);
 
   const owner = {
-    name: orderData?.name_owner,
     phone: orderData?.property_owner_mobile,
     birthDate: orderData?.property_owner_dob,
     nationalId: orderData?.property_owner_id_num,
-    iban: orderData?.property_owner_iban,
   };
 
   const agent = {
@@ -166,21 +164,6 @@ const DeedOwners = ({ data }) => {
                   onCopy={copyToClipboard}
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-5">
-                <SummaryInfoItem
-                  value={owner.name}
-                  label="اسم المالك"
-                  onCopy={copyToClipboard}
-                />
-                <div className="sm:col-span-2">
-                  <SummaryInfoItem
-                    value={owner.iban}
-                    label="ايبان المالك"
-                    onCopy={copyToClipboard}
-                  />
-                </div>
-              </div>
-
               <UserRelatedContracts orderData={data} />
             </div>
           </SummaryFieldsLayout>

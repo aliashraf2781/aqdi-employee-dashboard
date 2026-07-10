@@ -24,7 +24,7 @@ export default function Header({orderId, isSingleOrder, page, title, isMain, fir
     const pathname = usePathname();
     const showOrderMessages = isOrdersRelatedPath(pathname);
     const { user } = useUserStore();
-    const { setDisplayedPart, displayedPart, setOrderId, isSidebarOpen, toggleSidebar, setSidebarOpen } = useSidebarStore();
+    const { setDisplayedPart, displayedPart, setOrderId, isSidebarOpen, toggleSidebar, setSidebarOpen, isCommentPanelOpen, setCommentPanelOpen } = useSidebarStore();
     const { logout, logoutLoading } = useLogout();
     const { can } = usePermissions();
 
@@ -99,13 +99,8 @@ export default function Header({orderId, isSingleOrder, page, title, isMain, fir
                     isSingleOrder ?
                         <button onClick={() => {
                             setOrderId(orderId);
-                            if (displayedPart === "comment") {
-                                setDisplayedPart("default");
-                            } else {
-                                setSidebarOpen(true);
-                                setDisplayedPart("comment");
-                            }
-                        }} className={` ${displayedPart === "comment" ? "bg-brand-main" : " bg-[#F3F3F3]"} w-[52px] h-[52px] rounded-full transition-all duration-300 flex items-center justify-center hover:bg-[#eee] hover:scale-105`} aria-label="تعليقات الطلب"><i className="fa-regular fa-comments text-[18px] text-[#4D4D4D]"></i></button>
+                            setCommentPanelOpen(!isCommentPanelOpen);
+                        }} className={` ${isCommentPanelOpen ? "bg-brand-main" : " bg-[#F3F3F3]"} w-[52px] h-[52px] rounded-full transition-all duration-300 flex items-center justify-center hover:bg-[#eee] hover:scale-105`} aria-label="تعليقات الطلب"><i className="fa-regular fa-comments text-[18px] text-[#4D4D4D]"></i></button>
                         :
                         null
                 }
