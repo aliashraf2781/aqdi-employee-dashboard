@@ -95,9 +95,10 @@ export default function OrdersStatusCards({
   showAllCard = false,
   allTotal = 0,
   countsById = {},
+  gridClassName = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3",
 }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+    <div className={gridClassName}>
       {showAllCard && (
         <StatusCard
           item={{ name: "الكل" }}

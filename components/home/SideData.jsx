@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useLogout } from "@/src/hooks/useLogout";
 import { usePermissions } from "@/src/hooks/usePermissions";
 import { SIDEBAR_NAV } from "@/src/lib/permissions";
-import { Box, Loader2, Settings } from "lucide-react";
+import { Box, FileText, Loader2, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BiSolidFolder, BiSolidFolderMinus } from "react-icons/bi";
@@ -30,10 +30,15 @@ const NAV_ICONS = {
   '/home/incompleted-whatsapp': BiSolidFolderMinus,
   '/home/return-orders': HiMiniArrowPathRoundedSquare,
   '/home/sorting-orders': FaEnvelopeOpen,
+  '/home/draft-contract-statuses': FaEnvelopeOpen,
+  '/home/draft-completed-orders': RiPentagonFill,
+  '/home/reliable-orders': RiPentagonFill,
+  '/home/canceled-orders': RiPentagonFill,
   '/home/roles': TbClipboardListFilled,
   '/home/employees': HiUsers,
   '/home/salaries': RiMoneyDollarCircleFill,
   '/home/settings': Settings,
+  '/home/contract-settings': FileText,
 };
 
 const DESKTOP_MEDIA = '(min-width: 1201px)';

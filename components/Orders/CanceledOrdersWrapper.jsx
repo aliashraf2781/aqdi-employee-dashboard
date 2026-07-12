@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import Loader from "../home/loader";
 import { useRouter } from "next/navigation";
 import OrdersToolbar from "./shared/orders-toolbar";
-import OrdersStatusCards from "./shared/orders-status-cards";
 import OrdersTable from "./shared/orders-table";
 import OrdersPagination from "./shared/orders-pagination";
 import {
@@ -16,10 +15,11 @@ import {
 } from "./shared/orders-filter-utils";
 import { exportOrdersToExcel } from "./shared/orders-export";
 import { useOrdersSelection } from "./shared/use-orders-selection";
-import { filterOrdersPageStatusItems } from "@/src/lib/orders-page-statuses";
 
-export default function AllOrdersWrapper() {
-  const [activeFilter, setActiveFilter] = useState("");
+export const CANCELED_ORDERS_QUERY_KEY = "canceledOrders";
+export const CANCELED_ORDERS_API = "/admin/orders/status/4";
+
+export default function CanceledOrdersWrapper() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,61 +43,25 @@ export default function AllOrdersWrapper() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeFilter, debouncedSearchQuery]);
+  }, [debouncedSearchQuery]);
 
   useEffect(() => {
     clear();
-  }, [activeFilter, debouncedSearchQuery, advancedFilters, clear]);
+  }, [debouncedSearchQuery, advancedFilters, clear]);
 
   const handleResetAll = () => {
     setSearchQuery("");
     setDebouncedSearchQuery("");
-    setActiveFilter("");
     setAdvancedFilters(emptyAdvancedFilters);
     setShowMoreFilters(false);
     setCurrentPage(1);
     clear();
   };
 
-  const { data: statusData, isLoading: statusLoading } = useQuery({
-    queryKey: ["status"],
-    queryFn: () => axiosInstance("/admin/contract-statuses"),
-  });
-
-  const statusItems = statusData?.data?.data?.items;
-  const ordersPageStatusItems = useMemo(
-    () => filterOrdersPageStatusItems(statusItems),
-    [statusItems]
-  );
-
-  const countsById = useMemo(
-    () =>
-      ordersPageStatusItems.reduce((acc, item) => {
-        acc[item.id] =
-          item.orders_count ??
-          item.count ??
-          item.total ??
-          item.contracts_count ??
-          0;
-        return acc;
-      }, {}),
-    [ordersPageStatusItems]
-  );
-
-  const { data: allTotal = 0 } = useQuery({
-    queryKey: ["orders-all-total"],
-    queryFn: async () => {
-      const response = await axiosInstance("/admin/orders?page=1&per_page=1");
-      return response?.data?.data?.pagination?.total ?? 0;
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  });
-
   const { data, isLoading } = useQuery({
-    queryKey: ["orders", activeFilter, debouncedSearchQuery, currentPage],
+    queryKey: [CANCELED_ORDERS_QUERY_KEY, debouncedSearchQuery, currentPage],
     queryFn: () => {
-      let url = `/admin/orders?contract_status_id=${activeFilter}&page=${currentPage}`;
+      let url = `${CANCELED_ORDERS_API}?page=${currentPage}`;
       if (debouncedSearchQuery) {
         url += `&search=${encodeURIComponent(debouncedSearchQuery)}`;
       }
@@ -117,14 +81,14 @@ export default function AllOrdersWrapper() {
     () => ({
       getSelectedOrders: () => selectedOrders,
       onExport: (rows) =>
-        exportOrdersToExcel(rows, { filename: "جميع-الطلبات", showStatusColumn: true }),
+        exportOrdersToExcel(rows, { filename: "طلبات-ملغية", showStatusColumn: true }),
     }),
     [selectedOrders]
   );
 
   const pageSelectionState = getPageSelectionState(filteredOrders);
 
-  if (isLoading || statusLoading) {
+  if (isLoading) {
     return <Loader />;
   }
 
@@ -132,12 +96,12 @@ export default function AllOrdersWrapper() {
     <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
       <Header
         page="welcome"
-        title="جميع الطلبات"
+        title="طلب ملغي"
         isMain={false}
         first="الرئيــسية"
         firstURL="/"
-        second="جميع الطلبات"
-        secondURL="/home/orders"
+        second="طلب ملغي"
+        secondURL="/home/canceled-orders"
       />
 
       <div className="flex flex-col gap-6 mt-4 relative z-10">
@@ -145,7 +109,7 @@ export default function AllOrdersWrapper() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           showAddButtons
-          queryKeys={["orders"]}
+          queryKeys={[CANCELED_ORDERS_QUERY_KEY]}
           showMoreFilters={showMoreFilters}
           onToggleMoreFilters={() => setShowMoreFilters((prev) => !prev)}
           advancedFilters={advancedFilters}
@@ -156,22 +120,13 @@ export default function AllOrdersWrapper() {
           selectedCount={selectedCount}
           onClearSelection={clear}
         />
-        <OrdersStatusCards
-          statusItems={ordersPageStatusItems}
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-          showAllCard={false}
-          allTotal={allTotal}
-          countsById={countsById}
-          gridClassName="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"
-        />
       </div>
 
       <OrdersTable
         orders={filteredOrders}
         showStatusColumn
         showChangeStatus
-        queryKey={["orders"]}
+        queryKey={[CANCELED_ORDERS_QUERY_KEY]}
         onRowClick={(row) => router.push(`/home/orders/${row.id}`)}
         selectable
         isSelected={isSelected}

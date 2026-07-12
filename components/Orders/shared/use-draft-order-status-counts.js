@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
+import {
+  DRAFT_ORDERS_API,
+  getDraftOrdersByStatusUrl,
+} from "@/src/lib/draft-contract-statuses";
 
 const COUNT_QUERY_OPTIONS = {
   staleTime: 5 * 60 * 1000,
@@ -20,17 +24,11 @@ const extractTotal = (response) => {
 };
 
 const fetchListTotal = async (url) => {
-  const separator = url.includes("?") ? "&" : "?";
-  const response = await axiosInstance(`${url}${separator}page=1&per_page=1`);
+  const response = await axiosInstance(`${url}?page=1&per_page=1`);
   return extractTotal(response);
 };
 
-export function useOrderStatusCounts(
-  statusItems = [],
-  { baseUrl, statusParam = "contract_status_id", extraParams = "" } = {}
-) {
-  const params = extraParams ? extraParams.replace(/^&/, "") : "";
-  const allUrl = params ? `${baseUrl}?${params}` : baseUrl;
+export function useDraftOrderStatusCounts(statusItems = []) {
   const statusIds = useMemo(
     () => (statusItems ?? []).map((item) => item.id).filter(Boolean),
     [statusItems]
@@ -40,22 +38,18 @@ export function useOrderStatusCounts(
     queries: useMemo(
       () => [
         {
-          queryKey: ["order-status-count", baseUrl, "all", params],
-          queryFn: () => fetchListTotal(allUrl),
-          enabled: Boolean(baseUrl),
+          queryKey: ["draft-order-status-count", "all"],
+          queryFn: () => fetchListTotal(DRAFT_ORDERS_API),
           ...COUNT_QUERY_OPTIONS,
         },
         ...statusIds.map((id) => ({
-          queryKey: ["order-status-count", baseUrl, id, params],
-          queryFn: () =>
-            fetchListTotal(
-              `${baseUrl}?${statusParam}=${id}${params ? `&${params}` : ""}`
-            ),
-          enabled: Boolean(baseUrl),
+          queryKey: ["draft-order-status-count", id],
+          queryFn: () => fetchListTotal(getDraftOrdersByStatusUrl(id)),
+          enabled: Boolean(id),
           ...COUNT_QUERY_OPTIONS,
         })),
       ],
-      [allUrl, baseUrl, params, statusIds, statusParam]
+      [statusIds]
     ),
   });
 

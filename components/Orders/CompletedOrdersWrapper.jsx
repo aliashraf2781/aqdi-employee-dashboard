@@ -11,7 +11,6 @@ import { useQuery } from '@tanstack/react-query'
 import Loader from '../home/loader'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import OrdersToolbar from './shared/orders-toolbar'
-import OrdersStatusCards from './shared/orders-status-cards'
 import OrdersTable from './shared/orders-table'
 import OrdersPagination from './shared/orders-pagination'
 import {
@@ -20,12 +19,10 @@ import {
 } from './shared/orders-filter-utils'
 import { exportOrdersToExcel } from './shared/orders-export'
 import { useOrdersSelection } from './shared/use-orders-selection'
-import { useOrderStatusCounts } from './shared/use-order-status-counts'
 
 export default function CompletedOrdersWrapper() {
     const router = useRouter()
     const pathname = usePathname()
-    const [activeFilter, setActiveFilter] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -100,33 +97,12 @@ export default function CompletedOrdersWrapper() {
 
 
 
-    /*-------------------------------------------------------------------------------------*/
-    // get all status
-    function getStatus() {
-        return axiosInstance("/admin/contract-statuses")
-    }
-    const { data: statusData, isLoading: statusLoading } = useQuery({
-        queryKey: ["status"],
-        queryFn: getStatus
-    })
-    const statusItems = statusData?.data?.data?.items;
     const searchParams = useSearchParams();
     const createdAtParam = searchParams ? searchParams.get('created_at') : null;
-
-    const createdAtQuery = createdAtParam
-        ? `created_at=${createdAtParam === 'total' ? 'all' : createdAtParam}`
-        : '';
-
-    const { allTotal, byId: countsById } = useOrderStatusCounts(statusItems, {
-        baseUrl: '/admin/orders/complete/list',
-        statusParam: 'contract_status_id',
-        extraParams: createdAtQuery,
-    });
 
     const handleResetAll = () => {
         setSearchQuery('');
         setDebouncedSearchQuery('');
-        setActiveFilter('');
         setAdvancedFilters(emptyAdvancedFilters);
         setShowMoreFilters(false);
         setCurrentPage(1);
@@ -138,16 +114,16 @@ export default function CompletedOrdersWrapper() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [activeFilter, debouncedSearchQuery, createdAtParam]);
+    }, [debouncedSearchQuery, createdAtParam]);
 
     useEffect(() => {
         clear();
-    }, [activeFilter, debouncedSearchQuery, createdAtParam, advancedFilters, clear]);
+    }, [debouncedSearchQuery, createdAtParam, advancedFilters, clear]);
 
     /*-------------------------------------------------------------------------------------*/
     // get completed orders
     function getCompletedOrders() {
-        let url = `/admin/orders/complete/list?contract_status_id=${activeFilter}&page=${currentPage}`;
+        let url = `/admin/orders/complete/list?page=${currentPage}`;
         if (createdAtParam) {
             const createAt = createdAtParam === 'total' ? 'all' : createdAtParam;
             url += `&created_at=${createAt}`;
@@ -158,7 +134,7 @@ export default function CompletedOrdersWrapper() {
         return axiosInstance(url);
     }
     const { data, isLoading } = useQuery({
-        queryKey: ["completedOrders", activeFilter, createdAtParam, debouncedSearchQuery, currentPage],
+        queryKey: ["completedOrders", createdAtParam, debouncedSearchQuery, currentPage],
         queryFn: getCompletedOrders
     })
     const orders = data?.data?.data?.items ?? []
@@ -182,7 +158,7 @@ export default function CompletedOrdersWrapper() {
 
     /*-------------------------------------------------------------------------------------*/
     // loader
-    if (isLoading || statusLoading) return <Loader />
+    if (isLoading) return <Loader />
     return (
         <div className="flex flex-col gap-6 p-6 min-h-screen" dir="rtl">
             <Header page='welcome' title={"طلب مكتمل"} isMain={false} first="الرئيــسية" firstURL="/" second="طلب مكتمل" secondURL="/home/completed-orders" />
@@ -203,14 +179,6 @@ export default function CompletedOrdersWrapper() {
                     exportConfig={exportConfig}
                     selectedCount={selectedCount}
                     onClearSelection={clear}
-                />
-                <OrdersStatusCards
-                    statusItems={statusItems}
-                    activeFilter={activeFilter}
-                    onFilterChange={setActiveFilter}
-                    showAllCard={false}
-                    allTotal={allTotal}
-                    countsById={countsById}
                 />
             </div>
 

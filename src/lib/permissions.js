@@ -83,11 +83,16 @@ export function canAccess(permissions, user, section, action = 'view') {
 
 /** Longest-prefix wins. `section: null` = any authenticated user. */
 export const ROUTE_SECTION_RULES = [
+  { prefix: '/home/contract-settings', section: PERMISSION_SECTIONS.settings },
   { prefix: '/home/settings', section: PERMISSION_SECTIONS.settings },
   { prefix: '/home/salaries', section: PERMISSION_SECTIONS.employee_salaries },
   { prefix: '/home/employees', section: PERMISSION_SECTIONS.employees },
   { prefix: '/home/roles', section: PERMISSION_SECTIONS.roles },
   { prefix: '/home/sorting-orders', section: PERMISSION_SECTIONS.request_classification },
+  { prefix: '/home/draft-contract-statuses', section: PERMISSION_SECTIONS.request_classification },
+  { prefix: '/home/draft-completed-orders', section: PERMISSION_SECTIONS.request_classification },
+  { prefix: '/home/reliable-orders', section: PERMISSION_SECTIONS.request_classification },
+  { prefix: '/home/canceled-orders', section: PERMISSION_SECTIONS.request_classification },
   { prefix: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request },
   { prefix: '/home/incompleted-whatsapp', section: PERMISSION_SECTIONS.incomplete_whatsapp_request },
   { prefix: '/home/completed-whatsapp', section: PERMISSION_SECTIONS.completed_whatsapp_request },
@@ -164,12 +169,29 @@ export const SIDEBAR_NAV = [
       { label: 'مسودة العقود', href: '/home/draft-contracts', section: PERMISSION_SECTIONS.all_requests },
       { label: 'إنشاء عقد مدفوع', href: '/home/contract-paid', section: PERMISSION_SECTIONS.all_requests },
       { label: 'طلـب مكتمـــل', href: '/home/completed-orders', section: PERMISSION_SECTIONS.completed_request },
+      { label: 'طلـب مسوده و مكتمــل', href: '/home/draft-completed-orders', section: PERMISSION_SECTIONS.completed_request },
       {
         label: 'طلـب غيــر مكتمل',
         href: '/home/incolpleted-orders-analysis/total',
         section: PERMISSION_SECTIONS.incomplete_request,
       },
       { label: 'طلـب مستــرجع', href: '/home/return-orders', section: PERMISSION_SECTIONS.returned_request },
+
+      {
+        label: 'طلب موثق ',
+        href: '/home/reliable-orders',
+        section: PERMISSION_SECTIONS.request_classification,
+      },
+      {
+        label: 'طلب ملغي ',
+        href: '/home/canceled-orders',
+        section: PERMISSION_SECTIONS.request_classification,
+      },
+      {
+        label: 'تصنيف مسودة العقود',
+        href: '/home/draft-contract-statuses',
+        section: PERMISSION_SECTIONS.request_classification,
+      },
       {
         label: 'تصنيــف الطلبـــــات',
         href: '/home/sorting-orders',
@@ -195,6 +217,7 @@ export const SIDEBAR_NAV = [
     group: 'إعــدادت النظام',
     items: [
       { label: 'الاعــدادات', href: '/home/settings', section: PERMISSION_SECTIONS.settings },
+      { label: 'اعــدادات العقــود', href: '/home/contract-settings', section: PERMISSION_SECTIONS.settings },
     ],
   },
   {

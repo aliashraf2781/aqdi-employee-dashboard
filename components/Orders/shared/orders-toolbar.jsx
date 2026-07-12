@@ -91,7 +91,8 @@ export default function OrdersToolbar({
       queryClient.invalidateQueries({ queryKey: [key] });
     });
     queryClient.invalidateQueries({ queryKey: ["status"] });
-    queryClient.invalidateQueries({ queryKey: ["order-status-count"] });
+    queryClient.invalidateQueries({ queryKey: ["orders-all-total"] });
+    queryClient.invalidateQueries({ queryKey: ["draft-orders-all-total"] });
     queryClient.invalidateQueries({ queryKey: ["dashboard-analytics-quick"] });
   };
 

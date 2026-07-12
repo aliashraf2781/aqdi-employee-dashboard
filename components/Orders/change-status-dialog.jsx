@@ -56,6 +56,7 @@ export default function ChangeStatusDialog({ orderId, queryKey }) {
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم تغيير حالة الطلب")
       queryClient.invalidateQueries({ queryKey })
+      queryClient.invalidateQueries({ queryKey: ["orders-all-total"] })
     },
     onError: (res) => {
       toast.error(res?.response?.data?.message || "حدث خطأ أثناء تغيير حالة الطلب")

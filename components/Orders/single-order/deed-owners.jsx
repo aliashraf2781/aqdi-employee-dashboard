@@ -67,7 +67,7 @@ function isPdfUrl(url) {
 const DeedOwners = ({ data }) => {
   const galleryRef = useRef(null);
   const [agencyViewerOpen, setAgencyViewerOpen] = useState(false);
-
+console.log({data});
   const orderData = data?.contract_summary ?? {};
   const hasLegalAgent =
     orderData?.add_legal_agent_of_owner === 1 || data?.add_legal_agent_of_owner === 1;
@@ -164,12 +164,9 @@ const DeedOwners = ({ data }) => {
                   onCopy={copyToClipboard}
                 />
               </div>
-              <UserRelatedContracts orderData={data} />
             </div>
           </SummaryFieldsLayout>
         </ContractStepEditor>
-
-        {/* بيانات الوكيل */}
 
         {hasLegalAgent ? (
           <div className="bg-gray-100/50 p-6 rounded-[28px] border border-gray-100">
@@ -205,11 +202,11 @@ const DeedOwners = ({ data }) => {
                     label="رقم جوال الوكيل"
                     onCopy={copyToClipboard}
                   />
-                  <SummaryInfoItem
+                  {/* <SummaryInfoItem
                     value={agent.name}
                     label="اسم الوكيل"
                     onCopy={copyToClipboard}
-                  />
+                  /> */}
 
                 </div>
               </SummaryFieldsLayout>
@@ -244,6 +241,8 @@ const DeedOwners = ({ data }) => {
           </ContractStepEditor>
           </div>
         ) : null}
+
+        <UserRelatedContracts orderData={data} />
       </div>
 
       <AgencyDocumentViewerDialog

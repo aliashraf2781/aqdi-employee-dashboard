@@ -7,11 +7,16 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import ChangeStatusDialog from "../change-status-dialog";
+import ChangeDraftStatusDialog from "../change-draft-status-dialog";
 import {
   getContractTypeBadgeClass,
   getDocumentTypeBadgeClass,
   getOrderStatusBadgeStyle,
 } from "./orders-status-utils";
+import {
+  getDraftOrderStatusColor,
+  getDraftOrderStatusLabel,
+} from "@/src/lib/draft-contract-statuses";
 
 function formatRelativeTime(dateString) {
   if (!dateString) return "---";
@@ -53,6 +58,7 @@ export default function OrdersTable({
   orders = [],
   showStatusColumn = true,
   showChangeStatus = true,
+  statusMode = "contract",
   queryKey = ["orders"],
   onRowClick,
   selectable = false,
@@ -112,8 +118,14 @@ export default function OrdersTable({
             </tr>
           ) : (
             orders.map((row) => {
-              const statusName = row?.status?.name || row?.contract_status_name || "قيد المعالجة";
-              const statusStyle = getOrderStatusBadgeStyle(statusName, row?.status?.color);
+              const statusName =
+                statusMode === "draft"
+                  ? getDraftOrderStatusLabel(row)
+                  : row?.status?.name || row?.contract_status_name || "قيد المعالجة";
+              const statusStyle = getOrderStatusBadgeStyle(
+                statusName,
+                statusMode === "draft" ? getDraftOrderStatusColor(row) : row?.status?.color
+              );
 
               const rowSelected = selectable && isSelected?.(row.id);
 
@@ -213,9 +225,12 @@ export default function OrdersTable({
                   </td>
                   <td className="p-[15px_20px]">
                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                      {showChangeStatus && (
-                        <ChangeStatusDialog orderId={row?.id} queryKey={queryKey} />
-                      )}
+                      {showChangeStatus &&
+                        (statusMode === "draft" ? (
+                          <ChangeDraftStatusDialog orderId={row?.id} queryKey={queryKey} />
+                        ) : (
+                          <ChangeStatusDialog orderId={row?.id} queryKey={queryKey} />
+                        ))}
                       <button
                         type="button"
                         onClick={() => onRowClick?.(row)}
