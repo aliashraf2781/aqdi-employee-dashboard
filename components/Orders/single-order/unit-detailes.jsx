@@ -2,7 +2,6 @@
 
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
-import { getStepFormValues } from "@/src/lib/contract-update";
 import { ContractStepEditor } from "./contract-edit/contract-step-editor";
 import {
   STEP2_UNIT_FIELDS,
@@ -13,6 +12,7 @@ import {
   formatDisplayValue,
   isEmptyDisplayValue,
 } from "./contract-summary-view";
+import { asYesNo, pickFirst } from "./frontend-contract-fields";
 
 const BORDER_COLORS = [
   "border-blue-500",
@@ -46,7 +46,9 @@ const DetailCard = ({
         empty ? "opacity-45" : ""
       }`}
     >
-      <span className="mb-1 block text-right text-xs font-medium text-gray-400">{label}</span>
+      <span className="mb-1 block text-right text-xs font-medium text-gray-400">
+        {label}
+      </span>
       <p
         className={`flex items-center justify-end gap-2 text-sm font-bold lg:text-base ${
           empty ? "text-[#A3A3A3]" : "text-gray-800"
@@ -68,21 +70,55 @@ const DetailCard = ({
   );
 };
 
-function resolveFieldDisplayValue(field, data) {
+function readUnitValue(data, key) {
   const step2 = data?.step2 ?? {};
-  const formValues = getStepFormValues(data, "step2");
-  const rawValue = formValues[field.key];
+  const unit = step2.unit ?? data?.unit ?? {};
+  return pickFirst(step2[key], unit[key], data?.[key]);
+}
+
+function ownershipLabel(value) {
+  if (value === "owner") return "المالك";
+  if (value === "tenant") return "المستأجر";
+  return value;
+}
+
+function resolveFieldDisplayValue(field, data) {
+  const rawValue = readUnitValue(data, field.key);
 
   if (field.type === "boolean") {
-    return rawValue === 1 || rawValue === "1" || rawValue === true ? "نعم" : "لا";
+    if (rawValue === null || rawValue === undefined || rawValue === "") {
+      return null;
+    }
+    return asYesNo(rawValue);
   }
 
   if (field.key === "unit_type_id") {
-    return step2.unit_type_name || step2.unit_type?.name_ar || rawValue;
+    return pickFirst(
+      data?.step2?.unit_type_name,
+      data?.step2?.unit_type?.name_ar,
+      data?.step2?.unit_type?.name_trans,
+      data?.unit_type?.name_trans,
+      data?.unit_type?.name_ar,
+      data?.unit_type?.name,
+      rawValue
+    );
   }
 
   if (field.key === "unit_usage_id") {
-    return step2.unit_usage_name || step2.unit_usage?.name_ar || rawValue;
+    return pickFirst(
+      data?.step2?.unit_usage_name,
+      data?.step2?.unit_usage?.name_ar,
+      data?.unit_usage?.name_ar,
+      data?.unit_usage?.name_en,
+      rawValue
+    );
+  }
+
+  if (
+    field.key === "electricity_meter_ownership" ||
+    field.key === "water_meter_ownership"
+  ) {
+    return ownershipLabel(rawValue);
   }
 
   return rawValue;
@@ -107,10 +143,24 @@ const UnitDetailes = ({ data }) => {
   const roomDetails = buildSectionItems(STEP2_ROOM_FIELDS, data);
   const services = buildSectionItems(STEP2_SERVICE_FIELDS, data);
 
+  const servicesPayload = pickFirst(data?.step2?.Services, data?.Services);
+  const servicesDisplay =
+    Array.isArray(servicesPayload) && servicesPayload.length === 0
+      ? "—"
+      : Array.isArray(servicesPayload)
+        ? servicesPayload.join("، ")
+        : servicesPayload === 0 || servicesPayload === "0"
+          ? "—"
+          : servicesPayload;
+
   return (
     <div className="space-y-6 p-4 lg:p-6" dir="rtl">
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <ContractStepEditor title="تفاصيل الوحدات" step="step2" fields={STEP2_UNIT_FIELDS}>
+        <ContractStepEditor
+          title="تفاصيل الوحدات"
+          step="step2"
+          fields={STEP2_UNIT_FIELDS}
+        >
           <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {unitGeneralDetails.map((item) => (
@@ -120,7 +170,11 @@ const UnitDetailes = ({ data }) => {
           </div>
         </ContractStepEditor>
 
-        <ContractStepEditor title="تفاصيل الغرف" step="step2" fields={STEP2_ROOM_FIELDS}>
+        <ContractStepEditor
+          title="تفاصيل الغرف"
+          step="step2"
+          fields={STEP2_ROOM_FIELDS}
+        >
           <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {roomDetails.map((item) => (
@@ -131,7 +185,11 @@ const UnitDetailes = ({ data }) => {
         </ContractStepEditor>
       </div>
 
-      <ContractStepEditor title="الخدمات والعدادات" step="step2" fields={STEP2_SERVICE_FIELDS}>
+      <ContractStepEditor
+        title="الخدمات والعدادات"
+        step="step2"
+        fields={STEP2_SERVICE_FIELDS}
+      >
         <div className="rounded-[28px] border border-gray-100 bg-gray-100/50 p-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {services.map((item) => (

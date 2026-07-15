@@ -24,6 +24,11 @@ import AgencyDocumentViewerDialog, {
   resolveAgencyDocumentUrl,
 } from "./agency-document-viewer-dialog";
 import UserRelatedContracts from "./user-related-contracts";
+import {
+  INSTRUMENT_IMAGE_FIELDS,
+  asYesNo,
+  pickFirst,
+} from "./frontend-contract-fields";
 
 const OrderSectionErrorMenu = dynamic(
   () => import("@/components/Orders/messages/order-section-error-menu"),
@@ -39,23 +44,14 @@ const resolveImageUrl = (value) => {
   return null;
 };
 
-const INSTRUMENT_IMAGE_FIELDS = [
-  { key: "image_instrument", label: "صورة الصك" },
-  { key: "image_instrument_from_the_front", label: "صورة الصك من الأمام" },
-  { key: "image_instrument_from_the_back", label: "صورة الصك من الخلف" },
-  {
-    key: "copy_power_of_attorney_from_heirs_to_agent",
-    label: "نسخة الوكالة من الورثة للوكيل",
-  },
-  {
-    key: "copy_of_the_endowment_registration_certificate",
-    label: "نسخة شهادة تسجيل الوقف",
-  },
-  { key: "copy_of_the_trusteeship_deed", label: "نسخة صك النظارة" },
-];
+const calendarTypeLabel = (value) => {
+  if (value === "hijri") return "هجري";
+  if (value === "gregorian") return "ميلادي";
+  return value;
+};
 
 const copyToClipboard = (value) => {
-  if (!value || value === "--") return;
+  if (!value || value === "--" || value === "—") return;
   navigator.clipboard.writeText(String(value));
   toast.success("تم النسخ بنجاح");
 };
@@ -65,19 +61,33 @@ function isPdfUrl(url) {
   return url.split("?")[0].toLowerCase().endsWith(".pdf");
 }
 
+function composeDob(day, month, year, fallback) {
+  if (day && month && year) return `${day}-${month}-${year}`;
+  return fallback ?? null;
+}
+
 const DeedOwners = ({ data }) => {
   const [agencyViewerOpen, setAgencyViewerOpen] = useState(false);
   const [deedViewerOpen, setDeedViewerOpen] = useState(false);
 
-  const orderData = data?.contract_summary ?? {};
-  const hasLegalAgent =
-    orderData?.add_legal_agent_of_owner === 1 || data?.add_legal_agent_of_owner === 1;
+  const summary = data?.contract_summary ?? {};
+  const pick = (...keys) =>
+    pickFirst(...keys.flatMap((key) => [summary?.[key], data?.[key]]));
 
-  const agencyDocumentUrl = resolveAgencyDocumentUrl(orderData);
+  const hasLegalAgent =
+    asYesNo(pick("add_legal_agent_of_owner")) === "نعم";
+
+  const agencyDocumentUrl = resolveAgencyDocumentUrl({
+    ...summary,
+    copy_of_the_authorization_or_agency: pick(
+      "copy_of_the_authorization_or_agency",
+      "copy_of_the_authorization_or_agency_path"
+    ),
+  });
   const agencyIsPdf = isPdfUrl(agencyDocumentUrl);
 
   const images = INSTRUMENT_IMAGE_FIELDS.map(({ key, label }) => {
-    const url = resolveImageUrl(orderData?.[key]);
+    const url = resolveImageUrl(pick(key));
     if (!url) return null;
     return {
       original: url,
@@ -87,35 +97,53 @@ const DeedOwners = ({ data }) => {
     };
   }).filter(Boolean);
 
-  const owner = {
-    phone: orderData?.property_owner_mobile,
-    birthDate: orderData?.property_owner_dob,
-    nationalId: orderData?.property_owner_id_num,
-  };
-
-  const agent = {
-    name:
-      orderData?.name_of_property_owner_agent ??
-      orderData?.property_owner_agent_name ??
-      orderData?.name_owner,
-    phone: orderData?.mobile_of_property_owner_agent,
-    birthDate: orderData?.dob_of_property_owner_agent,
-    nationalId: orderData?.id_num_of_property_owner_agent,
-  };
-
   const ownerFields = [
-    { value: owner.nationalId, label: "رقم الهوية" },
-    { value: owner.birthDate, label: "تاريخ الميلاد" },
-    { value: owner.phone, label: "رقم الجوال" },
+    { value: pick("property_owner_id_num"), label: "رقم الهوية" },
+    {
+      value: composeDob(
+        pick("property_owner_dob_day"),
+        pick("property_owner_dob_month"),
+        pick("property_owner_dob_year"),
+        pick("property_owner_dob")
+      ),
+      label: "تاريخ الميلاد",
+    },
+    {
+      value: calendarTypeLabel(pick("type_dob_property_owner", "type_dob")),
+      label: "نوع تاريخ الميلاد",
+    },
+    { value: pick("property_owner_mobile"), label: "رقم الجوال" },
   ];
+
+  const instrumentFields = [
+    {
+      value: pick("instrument_type_trans", "instrument_type"),
+      label: "نوع الصك",
+    },
+    {
+      value: asYesNo(pick("is_multiple_trusteeship_deed_copy")),
+      label: "صكوك نظارة متعددة",
+    },
+  ];
+
 
   const agentFields = [
-    { value: agent.nationalId, label: "رقم هوية الوكيل" },
-    { value: agent.birthDate, label: "تاريخ ميلاد الوكيل" },
-    { value: agent.phone, label: "رقم جوال الوكيل" },
+    { value: pick("id_num_of_property_owner_agent"), label: "رقم هوية الوكيل" },
+    {
+      value: composeDob(
+        pick("dob_of_property_owner_agent_day"),
+        pick("dob_of_property_owner_agent_month"),
+        pick("dob_of_property_owner_agent_year"),
+        pick("dob_of_property_owner_agent")
+      ),
+      label: "تاريخ ميلاد الوكيل",
+    },
+    {
+      value: calendarTypeLabel(pick("type_dob_property_owner_agent")),
+      label: "نوع تاريخ ميلاد الوكيل",
+    },
+    { value: pick("mobile_of_property_owner_agent"), label: "رقم جوال الوكيل" },
   ];
-
-
 
   const openAgencyDocument = () => {
     if (!agencyDocumentUrl) {
@@ -127,11 +155,14 @@ const DeedOwners = ({ data }) => {
 
   return (
     <div className="flex items-start gap-4" dir="rtl">
-      {images.length > 0 && (
+      {images.length > 0 ? (
         <div className="w-1/3 shrink-0">
           <div className="flex items-center gap-1 text-xs mb-2">
             <p className="text-[#4D4D4D]">صـورة الصك :</p>
-            <Button variant="ghost" className="p-0 text-xs h-auto text-green-600 font-bold hover:text-green-700">
+            <Button
+              variant="ghost"
+              className="p-0 text-xs h-auto text-green-600 font-bold hover:text-green-700"
+            >
               <BiEdit size={16} className="text-green-500" />
               تعديل
             </Button>
@@ -148,10 +179,11 @@ const DeedOwners = ({ data }) => {
             images={images}
           />
         </div>
-      )}
+      ) : null}
 
       <div className="flex-1 min-w-0 space-y-8">
-        {/* بيانات الملاك */}
+
+
         <ContractStepEditor
           title="بيــانات المــلاك"
           step="summary"
@@ -168,7 +200,7 @@ const DeedOwners = ({ data }) => {
                 />
               }
             >
-              <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
                 {ownerFields.map((item) => (
                   <SummaryInfoItem
                     key={item.label}
@@ -215,27 +247,24 @@ const DeedOwners = ({ data }) => {
                 <div className="flex flex-wrap items-center gap-3 pt-1">
                   <LegalAgentStatusBadge />
 
-                  {!agencyIsPdf && agencyDocumentUrl ? (
+                  {agencyDocumentUrl ? (
                     <button
                       type="button"
                       onClick={openAgencyDocument}
                       className="inline-flex items-center gap-2 rounded-xl border border-[#E8E8E8] bg-white px-4 py-2.5 text-[13px] font-bold text-black shadow-sm transition-colors hover:bg-[#FAFAFA]"
                     >
-                      <ImageIcon className="size-4" />
-                      عرض صورة الوكالة
+                      {agencyIsPdf ? (
+                        <Eye className="size-4" />
+                      ) : (
+                        <ImageIcon className="size-4" />
+                      )}
+                      {agencyIsPdf ? "عرض الوكالة PDF" : "عرض صورة الوكالة"}
                     </button>
-                  ) : null}
-
-                  {agencyIsPdf && agencyDocumentUrl ? (
-                    <button
-                      type="button"
-                      onClick={openAgencyDocument}
-                      className="inline-flex items-center gap-2 rounded-xl border border-[#E8E8E8] bg-white px-4 py-2.5 text-[13px] font-bold text-black shadow-sm transition-colors hover:bg-[#FAFAFA]"
-                    >
-                      <Eye className="size-4" />
-                      عرض الوكالة PDF
-                    </button>
-                  ) : null}
+                  ) : (
+                    <span className="text-[13px] font-medium text-[#A3A3A3] opacity-45">
+                      لا يوجد ملف وكالة
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

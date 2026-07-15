@@ -20,8 +20,6 @@ export const CONTRACT_STEP_KEYS = {
   step1: [
     "property_place_id",
     "property_city_id",
-    "property_type_id",
-    "property_usages_id",
     "neighborhood",
     "street",
     "building_number",
@@ -29,10 +27,7 @@ export const CONTRACT_STEP_KEYS = {
     "extra_figure",
     "latitude",
     "longitude",
-    "age_of_the_property",
-    "number_of_floors",
-    "number_of_units_per_floor",
-    "number_of_units_in_realestate",
+    "address_url",
   ],
   step2: [
     "unit_type_id",
@@ -41,40 +36,34 @@ export const CONTRACT_STEP_KEYS = {
     "floor_number",
     "unit_area",
     "tootal_rooms",
+    "number_of_rooms",
     "The_number_of_halls",
     "The_number_of_kitchens",
+    "The_number_of_toilets",
     "The_number_of_the_toilet",
     "window_ac",
     "split_ac",
-    "number_of_unit_air_conditioners",
-    "electricity_meter_number",
-    "water_meter_number",
     "kitchen_tank",
     "furnished",
     "type_furnished",
     "electricity_meter",
+    "electricity_meter_number",
+    "electricity_meter_ownership",
     "water_meter",
+    "water_meter_number",
+    "water_meter_ownership",
   ],
   step3: [
     "tenant_entity",
-    "tenant_name",
     "tenant_id_num",
     "tenant_dob",
     "tenant_dob_day",
     "tenant_dob_month",
     "tenant_dob_year",
     "tenant_mobile",
-    "tenant_email",
-    "tenant_nationality",
-    "tenant_work",
-    "tenant_gender",
     "type_tenant_dob",
     "tenant_entity_unified_registry_number",
     "authorization_type",
-    "copy_of_the_owner_record",
-    "is_there_a_legal_representative_of_the_tenant",
-    "region_of_the_tenant_legal_agent",
-    "city_of_the_tenant_legal_agent",
     "id_num_of_property_tenant_agent",
     "id_number_of_property_tenant_agent",
     "type_dob_tenant_agent",
@@ -83,20 +72,21 @@ export const CONTRACT_STEP_KEYS = {
     "dob_of_property_tenant_agent_month",
     "dob_of_property_tenant_agent_year",
     "mobile_of_property_tenant_agent",
-    "tenant_role_id",
-    "tenant_role_ids",
+    "notes",
   ],
   step4: [
     "contract_starting_date",
     "type_contract_starting_date",
     "contract_term_in_years",
-    "annual_rent_amount_for_the_unit",
+    "duration_preset",
+    "duration_years",
+    "duration_months",
     "payment_type_id",
-    "daily_fine",
-    "other_conditions",
+    "conditions",
+    "tenant_roles",
     "additional_terms",
     "text_additional_terms",
-    "notes_edits",
+    "notes",
     "tenant_role_id",
     "tenant_role_ids",
   ],
@@ -104,26 +94,40 @@ export const CONTRACT_STEP_KEYS = {
 
 function readStep2(orderData, key) {
   const s2 = orderData?.step2 ?? {};
-  if (key === "unit_number") return s2.unit?.unit_number ?? s2.unit_number;
-  if (key === "floor_number") return s2.unit?.floor_number ?? s2.floor_number;
-  if (key === "unit_area") return s2.unit?.unit_area ?? s2.unit_area;
-  return s2[key];
+  const unit = s2.unit ?? orderData?.unit ?? {};
+  if (key === "unit_number") {
+    return s2.unit_number ?? unit.unit_number ?? orderData?.unit_number;
+  }
+  if (key === "floor_number") {
+    return s2.floor_number ?? unit.floor_number ?? orderData?.floor_number;
+  }
+  if (key === "unit_area") {
+    return s2.unit_area ?? unit.unit_area ?? orderData?.unit_area;
+  }
+  return s2[key] ?? unit[key] ?? orderData?.[key];
 }
 
 function readStep3(orderData, key) {
   const s3 = orderData?.step3 ?? {};
   if (key === "id_num_of_property_tenant_agent") {
-    return s3.id_num_of_property_tenant_agent ?? s3.id_number_of_property_tenant_agent;
+    return (
+      s3.id_num_of_property_tenant_agent ??
+      s3.id_number_of_property_tenant_agent ??
+      orderData?.id_num_of_property_tenant_agent ??
+      orderData?.id_number_of_property_tenant_agent
+    );
   }
-  return s3[key];
+  return s3[key] ?? orderData?.[key];
 }
 
 function readValue(orderData, step, key) {
-  if (step === "summary") return orderData?.contract_summary?.[key];
-  if (step === "step1") return orderData?.step1?.[key];
+  if (step === "summary") {
+    return orderData?.contract_summary?.[key] ?? orderData?.[key];
+  }
+  if (step === "step1") return orderData?.step1?.[key] ?? orderData?.[key];
   if (step === "step2") return readStep2(orderData, key);
   if (step === "step3") return readStep3(orderData, key);
-  if (step === "step4") return orderData?.step4?.[key];
+  if (step === "step4") return orderData?.step4?.[key] ?? orderData?.[key];
   return undefined;
 }
 
@@ -153,6 +157,11 @@ const BOOLEAN_FIELD_KEYS = new Set([
   "is_there_a_legal_representative_of_the_tenant",
   "furnished",
   "kitchen_tank",
+  "electricity_meter",
+  "water_meter",
+  "conditions",
+  "tenant_roles",
+  "additional_terms",
 ]);
 
 const REQUIRED_BOOLEAN_DEFAULTS = {
