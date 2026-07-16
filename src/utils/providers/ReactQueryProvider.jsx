@@ -13,6 +13,8 @@ const ReactQueryProvider = ({ children }) => {
             gcTime: 5 * 60_000,
             retry: 1,
             refetchOnWindowFocus: false,
+            // Stale queries (after mutation invalidate) should refetch on remount
+            refetchOnMount: true,
           },
         },
       })

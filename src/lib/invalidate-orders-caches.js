@@ -20,10 +20,17 @@ function toKey(queryKey) {
   return Array.isArray(queryKey) ? queryKey : [queryKey];
 }
 
+/**
+ * Mark matching queries stale and refetch them — including inactive ones —
+ * so navigating back to a page does not show a cached pre-mutation snapshot.
+ */
 function invalidate(queryClient, queryKey) {
   const key = toKey(queryKey);
   if (!key) return;
-  queryClient.invalidateQueries({ queryKey: key });
+  queryClient.invalidateQueries({
+    queryKey: key,
+    refetchType: "all",
+  });
 }
 
 function invalidateSingleOrder(queryClient, orderId) {

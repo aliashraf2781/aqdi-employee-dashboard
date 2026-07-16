@@ -3,10 +3,11 @@ import { useQueries } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 
 const COUNT_QUERY_OPTIONS = {
-  staleTime: 5 * 60 * 1000,
-  gcTime: 10 * 60 * 1000,
+  staleTime: 60_000,
+  gcTime: 10 * 60_000,
   refetchOnWindowFocus: false,
-  refetchOnMount: false,
+  // Must refetch when stale (e.g. after invalidateQueries) so status tabs update
+  refetchOnMount: true,
   retry: false,
 };
 

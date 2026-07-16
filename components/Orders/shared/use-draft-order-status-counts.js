@@ -7,10 +7,11 @@ import {
 } from "@/src/lib/draft-contract-statuses";
 
 const COUNT_QUERY_OPTIONS = {
-  staleTime: 5 * 60 * 1000,
-  gcTime: 10 * 60 * 1000,
+  staleTime: 60_000,
+  gcTime: 10 * 60_000,
   refetchOnWindowFocus: false,
-  refetchOnMount: false,
+  // Must refetch when stale (e.g. after invalidateQueries) so draft status tabs update
+  refetchOnMount: true,
   retry: false,
 };
 
