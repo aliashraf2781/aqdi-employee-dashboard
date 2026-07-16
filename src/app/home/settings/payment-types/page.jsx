@@ -20,7 +20,7 @@ function PaymentTypesGrid({ activeTab }) {
     mutationFn: (id) => axiosInstance.post(`/admin/payment-types/${id}/delete`),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف طريقة الدفع بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["payment-types", activeTab] });
+      queryClient.invalidateQueries({ queryKey: ["payment-types"] });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف طريقة الدفع");

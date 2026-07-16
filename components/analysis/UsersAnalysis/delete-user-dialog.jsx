@@ -20,6 +20,7 @@ export default function DeleteUserDialog({ user, redirectTo = "/home/user-analys
       toast.success(res?.data?.message || "تم حذف المستخدم بنجاح");
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["usersAnalysis"] });
+      queryClient.invalidateQueries({ queryKey: ["user", String(user?.id)] });
       router.push(redirectTo);
     },
     onError: (error) => {

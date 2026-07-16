@@ -35,7 +35,7 @@ export default function UnitUsagePage() {
       console.log(res);
       
       toast.success(res?.data?.message || "تم حذف نوع الوحدة بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["unit-usages", activeTab] });
+      queryClient.invalidateQueries({ queryKey: ["unit-usages"] });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف نوع الوحدة");

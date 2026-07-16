@@ -39,7 +39,7 @@ export default function AddPaymentTypeDialog({ activeTab = "housing" }) {
       setOpen(false);
       setNameAr("");
       setNameEn("");
-      queryClient.invalidateQueries({ queryKey: ["payment-types", activeTab] });
+      queryClient.invalidateQueries({ queryKey: ["payment-types"] });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء إضافة طريقة الدفع");

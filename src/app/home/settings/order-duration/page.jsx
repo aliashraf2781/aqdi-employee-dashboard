@@ -64,7 +64,6 @@ function DurationSections({ activeTab }) {
     mutationFn: (id) => axiosInstance.post(`/admin/contract-periods/${id}/delete`),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف المدة بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["contract-periods", activeTab] });
       queryClient.invalidateQueries({ queryKey: ["contract-periods"] });
     },
     onError: (error) => {

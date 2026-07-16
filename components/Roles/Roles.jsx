@@ -43,6 +43,7 @@ export default function Roles() {
             setIsDeleteModalOpen(false);
             setCategoryToDelete(null);
             queryClient.invalidateQueries({ queryKey: ['roles'] });
+            queryClient.invalidateQueries({ queryKey: ['roles-list'] });
         },
         onError: (error) => {
             toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف الدور");

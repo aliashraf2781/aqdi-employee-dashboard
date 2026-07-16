@@ -90,6 +90,7 @@ export default function OrdersAnalysisWrapper() {
     setCurrentPage(1);
     clear();
     queryClient.invalidateQueries({ queryKey: ["orders-whatsapp-completed"] });
+    queryClient.invalidateQueries({ queryKey: ["order-status-count"] });
   };
 
   if (isLoading) return <Loader />;

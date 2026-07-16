@@ -85,3 +85,23 @@ export function invalidateRefundCaches(queryClient, { queryKey, orderId } = {}) 
   invalidate(queryClient, ["returnOrders"]);
   invalidate(queryClient, ["status"]);
 }
+
+/**
+ * After creating/editing/deleting contract status definitions.
+ * Status labels/colors appear on lists and count tabs.
+ */
+export function invalidateContractStatusCaches(queryClient) {
+  invalidate(queryClient, ["status"]);
+  invalidateOrdersCaches(queryClient);
+}
+
+/**
+ * Invalidate a settings/resource family by root key (all tabs/filters).
+ * Prefer this over `["key", activeTab]` so sibling tabs stay fresh.
+ */
+export function invalidateQueryRoot(queryClient, root, extraKeys = []) {
+  invalidate(queryClient, [root]);
+  for (const key of extraKeys) {
+    invalidate(queryClient, toKey(key));
+  }
+}

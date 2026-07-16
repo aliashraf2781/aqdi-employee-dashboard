@@ -144,6 +144,8 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
     setCurrentPage(1);
     clear();
     queryClient.invalidateQueries({ queryKey: ["inCompletedOrders"] });
+    // Keep sibling order pages/counts fresh when filters reset after mutations elsewhere
+    queryClient.invalidateQueries({ queryKey: ["order-status-count"] });
   };
 
   if (isLoading || statusLoading || countsLoading) return <Loader />;

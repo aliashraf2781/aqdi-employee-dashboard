@@ -46,7 +46,6 @@ export default function AddNewDurationDialog({ activeTab = "housing" }) {
       setDurationName("");
       setPrice("");
       setInstrumentType("");
-      queryClient.invalidateQueries({ queryKey: ["contract-periods", activeTab] });
       queryClient.invalidateQueries({ queryKey: ["contract-periods"] });
     },
     onError: (error) => {

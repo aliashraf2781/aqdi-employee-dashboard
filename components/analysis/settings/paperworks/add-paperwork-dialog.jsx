@@ -54,7 +54,7 @@ export default function AddPaperworkDialog({ activeTab = "housing" }) {
       toast.success(res?.data?.message || "تم إضافة ورقة العمل بنجاح");
       setOpen(false);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: ["paperworks", activeTab] });
+      queryClient.invalidateQueries({ queryKey: ["paperworks"] });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء إضافة ورقة العمل");

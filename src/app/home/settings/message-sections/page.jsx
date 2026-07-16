@@ -36,7 +36,7 @@ export default function MessageSectionsPage() {
     },
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف القسم بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["message-alert-sections", activeTab] });
+      queryClient.invalidateQueries({ queryKey: ["message-alert-sections"] });
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "حدث خطأ أثناء حذف القسم");

@@ -38,7 +38,7 @@ export default function PropertyTypesPage() {
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف نوع العقار بنجاح");
       queryClient.invalidateQueries({
-        queryKey: ["property-types", activeTab]
+        queryKey: ["property-types"]
       });
     },
     onError: (error) => {

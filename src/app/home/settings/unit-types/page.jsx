@@ -35,7 +35,7 @@ export default function UnitTypesPage() {
     mutationFn: deleteUnitType,
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف نوع الوحدة بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["unit-types", activeTab] });
+      queryClient.invalidateQueries({ queryKey: ["unit-types"] });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف نوع الوحدة");

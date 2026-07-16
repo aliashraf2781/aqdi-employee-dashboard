@@ -1,6 +1,7 @@
 import { parseFirebasePayload } from "@/src/lib/firebase/push-payload";
 import { shouldHandlePushPayload } from "@/src/lib/firebase/push-dedupe";
 import { showFirebasePushToast } from "@/src/lib/firebase/show-firebase-push-toast";
+import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
 
 function runNotificationSideEffects(parsed, { queryClient, sidebarStore, router } = {}, { navigate = false } = {}) {
   if (!queryClient || !sidebarStore) return;
@@ -25,8 +26,7 @@ function runNotificationSideEffects(parsed, { queryClient, sidebarStore, router 
   }
 
   if (isOrderNotification) {
-    queryClient.invalidateQueries({ queryKey: ["unReceivedOrders"] });
-    queryClient.invalidateQueries({ queryKey: ["unReceivedOrdersTotal"] });
+    invalidateOrdersCaches(queryClient, { orderId });
     sidebarStore.setSidebarOpen(true);
     sidebarStore.setDisplayedPart("notification");
 

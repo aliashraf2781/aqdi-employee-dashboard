@@ -61,6 +61,7 @@ export default function EmployeesPage() {
     onSuccess: (res) => {
       toast.success(res?.message || 'تم تغيير حالة الموظف');
       queryClient.invalidateQueries({ queryKey: ['allEmployees'] });
+      queryClient.invalidateQueries({ queryKey: ['employeeAnalytics'] });
     },
     onError: (err) => {
       toast.error(err?.message);

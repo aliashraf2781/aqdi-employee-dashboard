@@ -79,6 +79,7 @@ export default function InCompletedWhatsappWrapper() {
     setCurrentPage(1);
     clear();
     queryClient.invalidateQueries({ queryKey: ["orders-whatsapp-incompleted"] });
+    queryClient.invalidateQueries({ queryKey: ["order-status-count"] });
   };
 
   if (isLoading) return <Loader />;

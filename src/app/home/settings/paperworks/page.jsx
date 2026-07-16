@@ -21,7 +21,7 @@ function PaperworksGrid({ activeTab }) {
     mutationFn: (id) => axiosInstance.post(`/admin/paperworks/${id}/delete`),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف ورقة العمل بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["paperworks", activeTab] });
+      queryClient.invalidateQueries({ queryKey: ["paperworks"] });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف ورقة العمل");

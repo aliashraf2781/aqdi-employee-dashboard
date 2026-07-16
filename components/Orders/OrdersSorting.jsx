@@ -7,6 +7,7 @@ import { axiosInstance } from '@/src/utils/axios'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Loader from '../home/loader'
 import { Loader2 } from 'lucide-react'
+import { invalidateContractStatusCaches } from '@/src/lib/invalidate-orders-caches'
 
 export default function OrdersSorting() {
 
@@ -34,7 +35,7 @@ export default function OrdersSorting() {
             toast.success(res.data.message || "تم إضافة حالة العقد بنجاح");
             setIsAddModalOpen(false);
             setNewCategory({ name: '', color_text: '#000000', color: '#000000' });
-            queryClient.invalidateQueries({ queryKey: ["status"] });
+            invalidateContractStatusCaches(queryClient);
         },
         onError: (error) => {
             toast.error(error.response.data.message);
@@ -53,7 +54,7 @@ export default function OrdersSorting() {
             toast.success(res.data.message || "تم حذف حالة العقد بنجاح");
             setIsDeleteModalOpen(false);
             setCategoryToDelete(null);
-            queryClient.invalidateQueries({ queryKey: ["status"] });
+            invalidateContractStatusCaches(queryClient);
         },
         onError: (error) => {
             toast.error(error.response.data.message);
@@ -71,7 +72,7 @@ export default function OrdersSorting() {
             toast.success(res.data.message || "تم تحديث حالة العقد بنجاح");
             setIsEditModalOpen(false);
             setEditingCategory(null);
-            queryClient.invalidateQueries({ queryKey: ["status"] });
+            invalidateContractStatusCaches(queryClient);
         },
         onError: (error) => {
             toast.error(error.response.data.message);

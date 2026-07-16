@@ -52,6 +52,8 @@ import {
 
 import { axiosInstance } from "@/src/utils/axios";
 
+import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Link2, Loader2, Plus, X } from "lucide-react";
@@ -161,7 +163,9 @@ export default function CreateContractPaidDialog() {
         payment,
       });
       setPaymentDialogOpen(true);
-      queryClient.invalidateQueries({ queryKey: [CONTRACT_PAID_QUERY_KEY] });
+      invalidateOrdersCaches(queryClient, {
+        queryKey: [CONTRACT_PAID_QUERY_KEY],
+      });
     },
     onError: (error) => {
       const data = error?.response?.data;

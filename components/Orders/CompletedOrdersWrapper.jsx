@@ -62,6 +62,9 @@ export default function CompletedOrdersWrapper() {
 
     useEffect(() => {
         queryClient.invalidateQueries({ queryKey: ['unReceivedOrders'] });
+        queryClient.invalidateQueries({ queryKey: ['unReceivedOrdersTotal'] });
+        queryClient.invalidateQueries({ queryKey: ['order-status-count'] });
+        queryClient.invalidateQueries({ queryKey: ['orders'] });
         setSidebarOpen(true);
         setDisplayedPart('notification');
     }, [queryClient, setDisplayedPart, setSidebarOpen]);

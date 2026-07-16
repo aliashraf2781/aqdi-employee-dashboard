@@ -36,7 +36,7 @@ export default function MessageSectionItemsPage() {
     },
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف البند بنجاح");
-      queryClient.invalidateQueries({ queryKey: ["message-alert-section-items", activeTab] });
+      queryClient.invalidateQueries({ queryKey: ["message-alert-section-items"] });
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "حدث خطأ أثناء حذف البند");

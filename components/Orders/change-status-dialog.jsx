@@ -58,6 +58,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
       setIsAddModalOpen(false);
       setNewCategory({ name: '', color_text: '#000000', color: '#000000' });
       queryClient.invalidateQueries({ queryKey: ["status"] });
+      invalidateOrdersCaches(queryClient);
       changeStatusMutate(res?.data?.data?.id)
     },
     onError: (error) => {

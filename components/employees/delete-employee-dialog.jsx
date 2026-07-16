@@ -28,6 +28,7 @@ export default function DeleteEmployeeDialog({ employee, isSingle = false }) {
       toast.success(res?.data?.message || "تم حذف الموظف بنجاح");
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ["allEmployees"] });
+      queryClient.invalidateQueries({ queryKey: ["employee", String(employee?.id)] });
       if(isSingle) router.push("/home/employees");
     },
     onError: (error) => {

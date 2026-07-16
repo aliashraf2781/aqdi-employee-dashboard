@@ -54,7 +54,7 @@ export default function AddNewSectionItemDialog({ isEdit, item, defaultType }) {
     onSuccess: (res) => {
       toast.success(res?.data?.message || (isEdit ? "تم تعديل البند بنجاح" : "تم إضافة البند بنجاح"));
       setOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["message-alert-section-items", defaultType] });
+      queryClient.invalidateQueries({ queryKey: ["message-alert-section-items"] });
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "حدث خطأ ما");
