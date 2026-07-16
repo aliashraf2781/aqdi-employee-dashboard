@@ -23,6 +23,7 @@ import OrdersToolbar from "@/components/Orders/shared/orders-toolbar";
 import OrdersPagination from "@/components/Orders/shared/orders-pagination";
 import { exportRefundContractsToExcel } from "@/components/Orders/shared/orders-export";
 import { useOrdersSelection } from "@/components/Orders/shared/use-orders-selection";
+import { invalidateRefundCaches } from "@/src/lib/invalidate-orders-caches";
 import {
   SelectableTableHeaderCheckbox,
   SelectableTableRowCheckbox,
@@ -176,8 +177,7 @@ export default function ReturnedAnalysisWrapper({ id }) {
   const handleSuccessDialogClose = (open) => {
     if (open) return;
     setSuccessDialog(null);
-    queryClient.invalidateQueries({ queryKey: ["refundContracts"] });
-    queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
+    invalidateRefundCaches(queryClient, { queryKey: ["refundContracts"] });
   };
 
   if (isLoading) return <Loader />;

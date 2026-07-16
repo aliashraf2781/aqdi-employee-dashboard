@@ -22,6 +22,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import { toast } from "sonner";
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
+import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
 
 const menuContentClass =
     "w-[210px] rounded-[18px] border border-[#E8E8E8] bg-white p-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
@@ -42,7 +43,7 @@ export default function ReturnOrderActionsMenu({
         mutationFn: () => axiosInstance.post(`/admin/orders/${order.id}/delete`),
         onSuccess: (res) => {
             toast.success(res?.data?.message || "تم حذف الطلب بنجاح");
-            queryClient.invalidateQueries({ queryKey });
+            invalidateOrdersCaches(queryClient, { queryKey, orderId: order?.id });
             setDeleteOpen(false);
         },
         onError: (error) => {

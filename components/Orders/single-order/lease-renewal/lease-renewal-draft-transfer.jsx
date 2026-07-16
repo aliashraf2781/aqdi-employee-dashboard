@@ -19,6 +19,7 @@ import {
   getOrderDraftContractNumber,
   getOrderDraftStatusFromDetail,
 } from "@/src/lib/draft-contract-statuses";
+import { invalidateDraftOrdersCaches } from "@/src/lib/invalidate-orders-caches";
 
 const DEFAULT_STATUS_STYLE = {
   backgroundColor: "#FFE8EE",
@@ -64,9 +65,11 @@ export default function LeaseRenewalDraftTransfer({
   const statusItems = extractDraftStatusItems(statusData);
 
   const invalidateOrder = () => {
-    queryClient.invalidateQueries({ queryKey });
-    queryClient.invalidateQueries({ queryKey: ["draft-orders-all-total"] });
-    queryClient.invalidateQueries({ queryKey: ["draftContracts"] });
+    invalidateDraftOrdersCaches(queryClient, {
+      queryKey,
+      orderId,
+      includeStatusDefinitions: false,
+    });
   };
 
   const { mutate: updateDraftStatus, isPending: isUpdatingStatus } = useMutation({

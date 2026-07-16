@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import { toast } from "sonner";
 import { mapApiValidationErrors } from "@/src/lib/contract-update";
+import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches";
 
 export function useSingleOrder(contractId) {
   const queryClient = useQueryClient();
@@ -30,9 +31,8 @@ export function useSingleOrder(contractId) {
           ...old,
           data: res.data,
         }));
-      } else {
-        queryClient.invalidateQueries({ queryKey });
       }
+      invalidateOrdersCaches(queryClient, { queryKey, orderId: contractId });
     },
     onError: (error) => {
       const apiErrors = error?.response?.data?.errors;

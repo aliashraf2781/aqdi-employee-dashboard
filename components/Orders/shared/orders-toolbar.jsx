@@ -10,6 +10,10 @@ import AddCompleteOrder from "../add-complete-order";
 import AddInCompleteOrder from "../add-incompleted-order";
 import OrdersMoreFilters from "./orders-more-filters";
 import { hasActiveAdvancedFilters } from "./orders-filter-utils";
+import {
+  invalidateDraftOrdersCaches,
+  invalidateOrdersCaches,
+} from "@/src/lib/invalidate-orders-caches";
 
 const defaultQuickLinks = [
   {
@@ -90,11 +94,9 @@ export default function OrdersToolbar({
     queryKeys.forEach((key) => {
       queryClient.invalidateQueries({ queryKey: [key] });
     });
+    invalidateOrdersCaches(queryClient);
+    invalidateDraftOrdersCaches(queryClient, { includeStatusDefinitions: true });
     queryClient.invalidateQueries({ queryKey: ["status"] });
-    queryClient.invalidateQueries({ queryKey: ["orders-all-total"] });
-    queryClient.invalidateQueries({ queryKey: ["draft-orders-all-total"] });
-    queryClient.invalidateQueries({ queryKey: ["order-status-count"] });
-    queryClient.invalidateQueries({ queryKey: ["dashboard-analytics-quick"] });
   };
 
   const filtersActive = hasActiveAdvancedFilters(advancedFilters);

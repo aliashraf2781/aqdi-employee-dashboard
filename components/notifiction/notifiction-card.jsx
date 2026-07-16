@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { axiosInstance } from '@/src/utils/axios'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { invalidateOrdersCaches } from '@/src/lib/invalidate-orders-caches'
 
 export default function NotifictionCard({ order }) {
   const queryClient = useQueryClient()
@@ -14,7 +15,7 @@ export default function NotifictionCard({ order }) {
       contract_id: order?.id
     }),
     onSuccess: (res) => {
-      queryClient.invalidateQueries(['unReceivedOrders'])
+      invalidateOrdersCaches(queryClient, { orderId: order?.id })
       toast.success(res?.data?.data?.receipt_status_label_ar)
       router.push(`/home/orders/${order?.id}`)
     },

@@ -14,6 +14,7 @@ import {
   emptyDraftStatusForm,
   extractDraftStatusItems,
 } from "@/src/lib/draft-contract-statuses";
+import { invalidateDraftOrdersCaches } from "@/src/lib/invalidate-orders-caches";
 
 function StatusColorFields({ values, onChange }) {
   return (
@@ -83,9 +84,9 @@ export default function DraftContractStatusesSorting() {
   const statusItems = extractDraftStatusItems(statusData);
 
   const invalidateStatuses = () => {
-    queryClient.invalidateQueries({ queryKey: [DRAFT_CONTRACT_STATUSES_QUERY_KEY] });
-    queryClient.invalidateQueries({ queryKey: ["draft-contract-statuses-active"] });
-    queryClient.invalidateQueries({ queryKey: ["draft-orders-all-total"] });
+    invalidateDraftOrdersCaches(queryClient, {
+      includeStatusDefinitions: true,
+    });
   };
 
   const { mutate: addStatusMutate, isPending: addStatusPending } = useMutation({

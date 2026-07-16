@@ -17,6 +17,7 @@ import {
     resolveRefundableContractId,
     RETURN_CONTRACT_STATUS_ID,
 } from "@/components/analysis/returned/refund-contract-utils";
+import { invalidateRefundCaches } from "@/src/lib/invalidate-orders-caches";
 
 function formatRelativeTimeAr(dateString) {
     if (!dateString) return "—";
@@ -115,12 +116,10 @@ export default function ReturnRequestDialog({
                 color: "#ffcccc",
             });
             toast.success(res?.data?.message || "تم رفع طلب الاسترجاع بنجاح");
-            queryClient.invalidateQueries({ queryKey });
-            queryClient.invalidateQueries({ queryKey: ["refundContractsLookup"] });
-            queryClient.invalidateQueries({ queryKey: ["refundContracts"] });
-            queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
-            queryClient.invalidateQueries({ queryKey: ["orders-all-total"] });
-            queryClient.invalidateQueries({ queryKey: ["status"] });
+            invalidateRefundCaches(queryClient, {
+                queryKey,
+                orderId: orderId ?? order?.id ?? orderUuid,
+            });
             onReturnSuccess?.();
             setStep(2);
         },
@@ -454,7 +453,10 @@ export default function ReturnRequestDialog({
                 onOpenChange={(v) => {
                     if (!v) {
                         handleClose();
-                        queryClient.invalidateQueries({ queryKey });
+                        invalidateRefundCaches(queryClient, {
+                            queryKey,
+                            orderId: orderId ?? order?.id,
+                        });
                     }
                 }}
             >
@@ -476,7 +478,10 @@ export default function ReturnRequestDialog({
                             type="button"
                             onClick={() => {
                                 handleClose();
-                                queryClient.invalidateQueries({ queryKey });
+                                invalidateRefundCaches(queryClient, {
+                                    queryKey,
+                                    orderId: orderId ?? order?.id,
+                                });
                                 toast.success("تم تحديث حالة الطلب بنجاح");
                             }}
                             className="w-full h-[50px] bg-brand-hover text-white rounded-full font-bold text-[15px] hover:bg-brand-hover/90 transition-all mt-4"

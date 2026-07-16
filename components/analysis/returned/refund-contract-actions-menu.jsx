@@ -33,6 +33,7 @@ import {
   RefundRetractSuccessDialog,
 } from "./refund-contract-success-dialog";
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
+import { invalidateRefundCaches } from "@/src/lib/invalidate-orders-caches";
 
 const menuContentClass =
   "w-[min(320px,calc(100vw-32px))] rounded-[18px] border border-[#E8E8E8] bg-white p-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
@@ -73,10 +74,10 @@ export default function RefundContractActionsMenu({
   );
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey });
-    queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
-    queryClient.invalidateQueries({ queryKey: ["refundContractsLookup"] });
-    queryClient.invalidateQueries({ queryKey: ["refundContracts"] });
+    invalidateRefundCaches(queryClient, {
+      queryKey,
+      orderId: order?.id ?? refund?.order_id ?? refund?.orderId,
+    });
   };
 
   const { mutate: updateRefund, isPending } = useMutation({

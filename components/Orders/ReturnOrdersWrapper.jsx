@@ -38,6 +38,7 @@ import {
   applyAdvancedFilters,
   emptyAdvancedFilters,
 } from "./shared/orders-filter-utils";
+import { invalidateRefundCaches } from "@/src/lib/invalidate-orders-caches";
 import {
   SelectableTableHeaderCheckbox,
   SelectableTableRowCheckbox,
@@ -319,14 +320,11 @@ export default function ReturnOrdersWrapper({ searchParams }) {
     setShowMoreFilters(false);
     setCurrentPage(1);
     clear();
-    queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
-    queryClient.invalidateQueries({ queryKey: ["refundContractsLookup"] });
+    invalidateRefundCaches(queryClient, { queryKey: ["returnOrders"] });
   };
 
   const invalidateAfterSuccess = () => {
-    queryClient.invalidateQueries({ queryKey: ["returnOrders"] });
-    queryClient.invalidateQueries({ queryKey: ["refundContractsLookup"] });
-    queryClient.invalidateQueries({ queryKey: ["refundContracts"] });
+    invalidateRefundCaches(queryClient, { queryKey: ["returnOrders"] });
   };
 
   const handleSuccessDialogClose = (open) => {

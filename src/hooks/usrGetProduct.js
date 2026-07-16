@@ -18,7 +18,7 @@ const fetchProduct = async (lang, productId) => {
 export const useGetProduct = (lang, productId) => {
 
   const query = useQuery({
-    queryKey: ["product" + productId],
+    queryKey: ["product", productId],
     queryFn: () => fetchProduct(lang, productId),
     // only run when we have lang and a country id
     enabled: Boolean(lang) && (productId !== undefined && productId !== null),

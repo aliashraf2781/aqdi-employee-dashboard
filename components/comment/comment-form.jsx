@@ -13,7 +13,7 @@ export default function CommentForm() {
   const { mutate: addComment, isPending } = useMutation({
     mutationFn: (data) => axiosInstance.post(`/admin/orders/${orderId}/comments`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['orderComments', orderId])
+      queryClient.invalidateQueries({ queryKey: ['orderComments', orderId] })
       toast.success('تم إضافة الملاحظة بنجاح')
       setComment('')
     },

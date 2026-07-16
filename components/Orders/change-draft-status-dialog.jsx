@@ -16,10 +16,13 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DRAFT_CONTRACT_STATUSES_API,
-  DRAFT_CONTRACT_STATUSES_QUERY_KEY,
   emptyDraftStatusForm,
   extractDraftStatusItems,
 } from "@/src/lib/draft-contract-statuses";
+import {
+  invalidateDraftOrdersCaches,
+  invalidateOrdersCaches,
+} from "@/src/lib/invalidate-orders-caches";
 
 export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -33,11 +36,12 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
 
   const statusItems = extractDraftStatusItems(statusData);
 
-  const invalidateRelated = () => {
-    queryClient.invalidateQueries({ queryKey: [DRAFT_CONTRACT_STATUSES_QUERY_KEY] });
-    queryClient.invalidateQueries({ queryKey: ["draft-contract-statuses-active"] });
-    queryClient.invalidateQueries({ queryKey: ["draft-orders-all-total"] });
-    queryClient.invalidateQueries({ queryKey: ["draftContracts"] });
+  const invalidateRelated = ({ includeStatusDefinitions = false } = {}) => {
+    invalidateDraftOrdersCaches(queryClient, {
+      queryKey,
+      orderId,
+      includeStatusDefinitions,
+    });
   };
 
   const { mutate: changeStatusMutate, isPending: changeStatusPending } = useMutation({
@@ -48,9 +52,6 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم تغيير حالة المسودة");
       invalidateRelated();
-      if (queryKey) {
-        queryClient.invalidateQueries({ queryKey });
-      }
     },
     onError: (res) => {
       toast.error(res?.response?.data?.message || "حدث خطأ أثناء تغيير حالة المسودة");
@@ -62,8 +63,7 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
     onSuccess: (res) => {
       setIsAddModalOpen(false);
       setNewCategory(emptyDraftStatusForm);
-      queryClient.invalidateQueries({ queryKey: [DRAFT_CONTRACT_STATUSES_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: ["draft-contract-statuses-active"] });
+      invalidateRelated({ includeStatusDefinitions: true });
       changeStatusMutate(res?.data?.data?.id);
     },
     onError: (error) => {
@@ -76,6 +76,7 @@ export default function ChangeDraftStatusDialog({ orderId, queryKey }) {
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف الطلب بنجاح");
       invalidateRelated();
+      invalidateOrdersCaches(queryClient, { queryKey, orderId });
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف الطلب");

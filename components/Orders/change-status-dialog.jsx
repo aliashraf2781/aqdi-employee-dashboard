@@ -15,6 +15,7 @@ import {
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils"
 import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close"
+import { invalidateOrdersCaches } from "@/src/lib/invalidate-orders-caches"
 
 export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -73,8 +74,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
     mutationFn: changeStatus,
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم تغيير حالة الطلب")
-      queryClient.invalidateQueries({ queryKey })
-      queryClient.invalidateQueries({ queryKey: ["orders-all-total"] })
+      invalidateOrdersCaches(queryClient, { queryKey, orderId })
     },
     onError: (res) => {
       toast.error(res?.response?.data?.message || "حدث خطأ أثناء تغيير حالة الطلب")
@@ -85,7 +85,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
     mutationFn: () => axiosInstance.post(`/admin/orders/${orderId}/delete`),
     onSuccess: (res) => {
       toast.success(res?.data?.message || "تم حذف الطلب بنجاح")
-      queryClient.invalidateQueries({ queryKey })
+      invalidateOrdersCaches(queryClient, { queryKey, orderId })
     },
     onError: (error) => {
       toast.error(error?.response?.data?.message || "حدث خطأ أثناء حذف الطلب")
