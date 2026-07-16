@@ -58,7 +58,13 @@ function PaidBadge({ orderData }) {
 export default function ContractPaymentLinkButton({ orderData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [paymentLink, setPaymentLink] = useState({ paymentUrl: "", cartAmount: null });
+  const [paymentLink, setPaymentLink] = useState({
+    paymentUrl: "",
+    cartAmount: null,
+    alreadyPaid: false,
+    message: null,
+    payment: null,
+  });
   const contractUuid = getOrderContractUuid(orderData);
 
   if (isContractPaid(orderData)) {
@@ -73,8 +79,14 @@ export default function ContractPaymentLinkButton({ orderData }) {
 
     setIsLoading(true);
     try {
-      const { paymentUrl, cartAmount } = await fetchContractPaymentLink(contractUuid);
-      setPaymentLink({ paymentUrl, cartAmount });
+      const result = await fetchContractPaymentLink(contractUuid);
+      setPaymentLink({
+        paymentUrl: result.paymentUrl || "",
+        cartAmount: result.cartAmount,
+        alreadyPaid: result.alreadyPaid,
+        message: result.message,
+        payment: result.payment,
+      });
       setDialogOpen(true);
     } catch (error) {
       const data = error?.response?.data;
@@ -106,6 +118,9 @@ export default function ContractPaymentLinkButton({ orderData }) {
         onOpenChange={setDialogOpen}
         paymentUrl={paymentLink.paymentUrl}
         cartAmount={paymentLink.cartAmount}
+        alreadyPaid={paymentLink.alreadyPaid}
+        message={paymentLink.message}
+        payment={paymentLink.payment}
       />
     </>
   );

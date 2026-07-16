@@ -171,7 +171,6 @@ export const SIDEBAR_NAV = [
       { label: 'إنشاء عقد مدفوع', href: '/home/contract-paid', section: PERMISSION_SECTIONS.all_requests },
       { label: 'طلـب مكتمـــل', href: '/home/completed-orders', section: PERMISSION_SECTIONS.completed_request },
       { label: 'طلـب مسوده و مكتمــل', href: '/home/draft-completed-orders', section: PERMISSION_SECTIONS.completed_request },
-      { label: 'طلـب مستلم من العميل', href: '/home/received-orders', section: PERMISSION_SECTIONS.completed_request },
       {
         label: 'طلـب غيــر مكتمل',
         href: '/home/incolpleted-orders-analysis/total',

@@ -7,7 +7,7 @@ import Header from '../home/Header'
 import { toast } from 'sonner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { axiosInstance } from '@/src/utils/axios'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Loader from '../home/loader'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import OrdersToolbar from './shared/orders-toolbar'
@@ -23,10 +23,13 @@ import {
     OrdersContractStatusFilterBar,
     useOrdersContractStatusFilter,
 } from './shared/use-orders-contract-status-filter'
+import { useSidebarStore } from '@/src/stores/sidebar-store'
 
 export default function CompletedOrdersWrapper() {
     const router = useRouter()
     const pathname = usePathname()
+    const queryClient = useQueryClient()
+    const { setDisplayedPart, setSidebarOpen } = useSidebarStore()
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -52,9 +55,16 @@ export default function CompletedOrdersWrapper() {
         countsLoading,
         appendStatusParam,
         resetStatusFilter,
+        statusFilterReady,
     } = useOrdersContractStatusFilter({
         countsBaseUrl: "/admin/orders/complete/list",
     });
+
+    useEffect(() => {
+        queryClient.invalidateQueries({ queryKey: ['unReceivedOrders'] });
+        setSidebarOpen(true);
+        setDisplayedPart('notification');
+    }, [queryClient, setDisplayedPart, setSidebarOpen]);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -154,7 +164,8 @@ export default function CompletedOrdersWrapper() {
     }
     const { data, isLoading } = useQuery({
         queryKey: ["completedOrders", createdAtParam, debouncedSearchQuery, currentPage, activeFilter],
-        queryFn: getCompletedOrders
+        queryFn: getCompletedOrders,
+        enabled: statusFilterReady,
     })
     const orders = data?.data?.data?.items ?? []
     const pagination = data?.data?.data?.pagination

@@ -50,6 +50,7 @@ export default function ReceivedOrdersWrapper() {
     countsLoading,
     appendStatusParam,
     resetStatusFilter,
+    statusFilterReady,
   } = useOrdersContractStatusFilter({
     countsBaseUrl: RECEIVED_ORDERS_API,
   });
@@ -86,6 +87,7 @@ export default function ReceivedOrdersWrapper() {
       }
       return axiosInstance(appendStatusParam(url));
     },
+    enabled: statusFilterReady,
   });
 
   const orders = data?.data?.data?.items ?? [];

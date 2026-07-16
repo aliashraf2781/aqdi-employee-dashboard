@@ -128,8 +128,19 @@ export function canRequestOrderReturn(order) {
   if (!order) return false;
   if (hasExistingReturnRequest(order)) return false;
 
-  const customerRefunded = order.customer_refunded ?? order.is_refunded ?? order.refunded;
-  if (customerRefunded !== null && customerRefunded !== undefined) return false;
+  const customerRefunded =
+    order.customer_refunded ?? order.is_refunded ?? order.refunded;
+
+  // Only block when the customer was actually refunded (true/1).
+  // `false` / `0` must still allow opening the return request dialog.
+  if (
+    customerRefunded === true ||
+    customerRefunded === 1 ||
+    customerRefunded === "1" ||
+    customerRefunded === "true"
+  ) {
+    return false;
+  }
 
   return true;
 }

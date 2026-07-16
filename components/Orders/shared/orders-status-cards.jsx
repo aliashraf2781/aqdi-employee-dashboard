@@ -96,30 +96,63 @@ function StatusIcon({ name }) {
   return <span className="text-[22px] leading-none">{emoji}</span>;
 }
 
+function getSoftStatusBackground(color) {
+  const rgb = parseHexColor(color);
+  if (!rgb) return "#F5F5F5";
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.14)`;
+}
+
 function StatusCard({ item, count, isActive, onClick }) {
   const statusColor = item?.color;
   const statusTextColor = getActiveStatusTextColor(
     statusColor,
     item?.color_text
   );
+  const inactiveTextColor = statusColor || "#111111";
+
+  const baseClass =
+    "rounded-full px-4 py-3 flex flex-col text-right transition-all border-2 outline-none focus-visible:ring-2 focus-visible:ring-brand-main/40";
+
+  if (!statusColor) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={isActive}
+        className={`${baseClass} ${
+          isActive
+            ? "bg-brand-main text-white border-brand-main shadow-md ring-2 ring-brand-main/35 ring-offset-2 scale-[1.03]"
+            : "bg-[#F5F5F5] text-black border-transparent hover:border-[#D4D4D4] hover:shadow-sm"
+        }`}
+      >
+        <p className="font-bold leading-snug">
+          {item.name} ({formatCount(count)})
+        </p>
+      </button>
+    );
+  }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full p-4 flex flex-col text-right transition-all border-2 ${
-        isActive
-          ? "shadow-md"
-          : "hover:shadow-md border-transparent"
-      } ${!statusColor ? (isActive ? "bg-brand-main text-white border-brand-main" : "bg-[#F5F5F5] border-transparent text-black") : ""}`}
+      aria-pressed={isActive}
+      className={`${baseClass} ${
+        isActive ? "shadow-md scale-[1.03]" : "hover:shadow-sm"
+      }`}
       style={
-        statusColor
+        isActive
           ? {
               backgroundColor: statusColor,
               color: statusTextColor,
-              borderColor: isActive ? statusTextColor : "transparent",
+              borderColor: statusTextColor,
+              boxShadow: `0 0 0 2px #fff, 0 0 0 4px ${statusColor}`,
             }
-          : undefined
+          : {
+              backgroundColor: getSoftStatusBackground(statusColor),
+              color: inactiveTextColor,
+              borderColor: `${statusColor}55`,
+            }
       }
     >
       <p className="font-bold leading-snug">
@@ -133,7 +166,7 @@ export default function OrdersStatusCards({
   statusItems = [],
   activeFilter,
   onFilterChange,
-  showAllCard = false,
+  showAllCard = true,
   allTotal = 0,
   countsById = {},
   gridClassName = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3",

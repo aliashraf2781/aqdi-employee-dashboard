@@ -17,6 +17,8 @@ import {
 import {
   getDraftOrderStatusColor,
   getDraftOrderStatusLabel,
+  getDraftRowHighlightStyle,
+  isDraftOrderRow,
 } from "@/src/lib/draft-contract-statuses";
 
 function formatRelativeTime(dateString) {
@@ -67,6 +69,7 @@ export default function OrdersTable({
   onToggleRow,
   onTogglePage,
   pageSelectionState = { all: false, some: false },
+  highlightDraftRows = true,
 }) {
   const tableHeaders = [
     ...(selectable ? [""] : []),
@@ -123,19 +126,37 @@ export default function OrdersTable({
                 statusMode === "draft"
                   ? getDraftOrderStatusLabel(row)
                   : row?.status?.name || row?.contract_status_name || "قيد المعالجة";
+              const draftStatusColor = getDraftOrderStatusColor(row);
               const statusStyle = getOrderStatusBadgeStyle(
                 statusName,
-                statusMode === "draft" ? getDraftOrderStatusColor(row) : row?.status?.color
+                statusMode === "draft" ? draftStatusColor : row?.status?.color
               );
 
               const rowSelected = selectable && isSelected?.(row.id);
+              const isKnownDraft = isDraftOrderRow(row);
+              const showDraftBadge =
+                highlightDraftRows && isKnownDraft && statusMode !== "draft";
+              const tintDraftRow =
+                !rowSelected &&
+                (statusMode === "draft" ||
+                  (highlightDraftRows && isKnownDraft));
+              const draftHighlightStyle = tintDraftRow
+                ? getDraftRowHighlightStyle(
+                    statusMode === "draft" ? draftStatusColor : "#F59E0B"
+                  )
+                : undefined;
 
               return (
                 <tr
                   key={row.id}
                   onClick={() => onRowClick?.(row)}
-                  className={`border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all cursor-pointer ${
-                    rowSelected ? "bg-[#F0FDF4]" : ""
+                  style={draftHighlightStyle}
+                  className={`border-b border-[#F5F5F5] last:border-0 transition-all cursor-pointer ${
+                    rowSelected
+                      ? "bg-[#F0FDF4]"
+                      : tintDraftRow
+                        ? "hover:brightness-[0.98]"
+                        : "hover:bg-[#fafafa]"
                   }`}
                 >
                   {selectable && (
@@ -151,7 +172,12 @@ export default function OrdersTable({
                       />
                     </td>
                   )}
-                  <td className="p-[15px_20px]">
+                  <td className="relative p-[15px_20px]">
+                    {showDraftBadge ? (
+                      <span className="absolute top-2 left-2 z-10 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[9px] font-bold text-[#B45309] ring-1 ring-[#F59E0B]/40 shadow-sm">
+                        مسودة
+                      </span>
+                    ) : null}
                     <div className="flex items-center justify-center gap-2 px-3 py-1.5 bg-[#f9f9f9] rounded-lg w-fit mx-auto border border-[#eee]">
                       <span className="text-black text-[12px] font-bold">{row?.uuid}</span>
                       <button

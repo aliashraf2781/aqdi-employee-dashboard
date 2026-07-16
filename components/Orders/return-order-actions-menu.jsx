@@ -21,6 +21,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/src/utils/axios";
 import { toast } from "sonner";
+import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
 
 const menuContentClass =
     "w-[210px] rounded-[18px] border border-[#E8E8E8] bg-white p-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
@@ -49,14 +50,13 @@ export default function ReturnOrderActionsMenu({
         },
     });
 
-    const handleReturnRequest = (e) => {
-        e.stopPropagation();
-        onReturnRequest?.(order);
+    const handleReturnRequest = () => {
+        openDialogAfterMenuClose(() => onReturnRequest?.(order));
     };
 
     return (
         <>
-            <DropdownMenu dir="rtl">
+            <DropdownMenu dir="rtl" modal={false}>
                 <DropdownMenuTrigger asChild>
                     <button
                         type="button"
@@ -77,7 +77,7 @@ export default function ReturnOrderActionsMenu({
                     {showReturnRequest ? (
                         <DropdownMenuItem
                             className={`${itemBaseClass} hover:bg-[#F9F9F9] focus:bg-[#F9F9F9]`}
-                            onClick={handleReturnRequest}
+                            onSelect={handleReturnRequest}
                         >
                             <span className="text-[18px] leading-none shrink-0" aria-hidden>
                                 😩
@@ -91,9 +91,8 @@ export default function ReturnOrderActionsMenu({
 
                     <DropdownMenuItem
                         className={`${itemBaseClass} hover:bg-[#FFF5F5] focus:bg-[#FFF5F5] text-[#E24444]`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteOpen(true);
+                        onSelect={() => {
+                            openDialogAfterMenuClose(() => setDeleteOpen(true));
                         }}
                     >
                         <Trash2 className="size-4 shrink-0 text-[#E24444]" strokeWidth={2} />

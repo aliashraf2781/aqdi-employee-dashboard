@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRelatedContractOrigin } from "./use-related-contract-origin";
+import { isDraftOrderRow } from "@/src/lib/draft-contract-statuses";
 
 function getCurrentContractId(orderData) {
   return orderData?.id ?? orderData?.contract_summary?.id ?? null;
@@ -29,7 +30,7 @@ export default function UserRelatedContracts({ orderData }) {
     (contract) => String(contract?.id) === String(originContractId)
   );
 
-  const getButtonClass = (contractId) => {
+  const getButtonClass = (contractId, isDraft) => {
     const id = String(contractId);
     const isCurrent =
       currentContractId != null && id === String(currentContractId);
@@ -42,6 +43,10 @@ export default function UserRelatedContracts({ orderData }) {
 
     if (isCurrent) {
       return `${buttonBase} bg-white border-primary text-primary ring-2 ring-primary/25 pointer-events-none`;
+    }
+
+    if (isDraft) {
+      return `${buttonBase} bg-[#FFFBEB] border-[#F59E0B] text-[#B45309] hover:bg-[#FEF3C7]`;
     }
 
     return `${buttonBase} bg-white border-[#E4E4E4] text-black hover:border-primary hover:text-primary`;
@@ -79,25 +84,33 @@ export default function UserRelatedContracts({ orderData }) {
             contractId != null &&
             originContractId != null &&
             String(contractId) === String(originContractId);
+          const isDraft = isDraftOrderRow(contract);
 
           return (
             <Link
               key={contractId ?? contractUuid}
               href={`/home/orders/${contractId}`}
-              className={getButtonClass(contractId)}
+              className={getButtonClass(contractId, isDraft)}
               dir="ltr"
               title={
                 isOrigin
                   ? "العقد الأساسي"
-                  : isCurrent
-                    ? "العقد الحالي"
-                    : undefined
+                  : isDraft
+                    ? "عقد مسودة"
+                    : isCurrent
+                      ? "العقد الحالي"
+                      : undefined
               }
               aria-current={isCurrent ? "page" : undefined}
             >
               {isOrigin && !isCurrent ? (
                 <span className="absolute -top-2 right-1 rounded bg-[#0D6B6B] px-1.5 py-0.5 text-[9px] font-bold text-white shadow">
                   أساسي
+                </span>
+              ) : null}
+              {isDraft && !isOrigin ? (
+                <span className="absolute -top-2 left-1 rounded bg-[#F59E0B] px-1.5 py-0.5 text-[9px] font-bold text-white shadow">
+                  مسودة
                 </span>
               ) : null}
               {contractUuid}

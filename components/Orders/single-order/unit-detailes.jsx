@@ -46,22 +46,17 @@ const DetailCard = ({
   copyable = false,
   borderColor = "border-gray-200",
 }) => {
-  const empty = isEmptyDisplayValue(value);
+  if (isEmptyDisplayValue(value)) return null;
+
   return (
     <div
-      className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor} ${
-        empty ? "opacity-45" : ""
-      }`}
+      className={`rounded-[16px] border-r-4 bg-white p-4 shadow-sm ${borderColor}`}
     >
       <span className="mb-1 block text-right text-xs font-medium text-gray-400">
         {label}
       </span>
-      <p
-        className={`flex items-center justify-end gap-2 text-sm font-bold lg:text-base ${
-          empty ? "text-[#A3A3A3]" : "text-gray-800"
-        }`}
-      >
-        {copyable && !empty ? (
+      <p className="flex items-center justify-end gap-2 text-sm font-bold text-gray-800 lg:text-base">
+        {copyable ? (
           <button
             type="button"
             onClick={() => copy(value)}

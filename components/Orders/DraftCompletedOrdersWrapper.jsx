@@ -50,6 +50,7 @@ export default function DraftCompletedOrdersWrapper() {
     countsLoading,
     appendStatusParam,
     resetStatusFilter,
+    statusFilterReady,
   } = useOrdersContractStatusFilter({
     countsBaseUrl: DRAFT_COMPLETED_ORDERS_API,
   });
@@ -91,6 +92,7 @@ export default function DraftCompletedOrdersWrapper() {
       }
       return axiosInstance(appendStatusParam(url));
     },
+    enabled: statusFilterReady,
   });
 
   const orders = data?.data?.data?.items ?? [];

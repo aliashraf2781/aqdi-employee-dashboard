@@ -32,6 +32,7 @@ import {
   RefundApprovedSuccessDialog,
   RefundRetractSuccessDialog,
 } from "./refund-contract-success-dialog";
+import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close";
 
 const menuContentClass =
   "w-[min(320px,calc(100vw-32px))] rounded-[18px] border border-[#E8E8E8] bg-white p-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
@@ -193,7 +194,7 @@ export default function RefundContractActionsMenu({
   return (
     <>
       {shouldShow && enrichedRefund ? (
-        <DropdownMenu dir="rtl">
+        <DropdownMenu dir="rtl" modal={false}>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
@@ -218,9 +219,8 @@ export default function RefundContractActionsMenu({
           >
             <DropdownMenuItem
               className={`${itemBaseClass} hover:bg-[#F0FFF8] focus:bg-[#F0FFF8]`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setReviewOpen(true);
+              onSelect={() => {
+                openDialogAfterMenuClose(() => setReviewOpen(true));
               }}
             >
               <span className="text-[16px] shrink-0" aria-hidden>
@@ -234,9 +234,8 @@ export default function RefundContractActionsMenu({
 
             <DropdownMenuItem
               className={`${itemBaseClass} hover:bg-[#FFF5F5] focus:bg-[#FFF5F5]`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setRejectOpen(true);
+              onSelect={() => {
+                openDialogAfterMenuClose(() => setRejectOpen(true));
               }}
             >
               <span className="text-[16px] shrink-0" aria-hidden>
@@ -250,9 +249,8 @@ export default function RefundContractActionsMenu({
 
             <DropdownMenuItem
               className={`${itemBaseClass} hover:bg-[#F9F9F9] focus:bg-[#F9F9F9]`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setRetractOpen(true);
+              onSelect={() => {
+                openDialogAfterMenuClose(() => setRetractOpen(true));
               }}
             >
               <span className="text-[18px] shrink-0" aria-hidden>

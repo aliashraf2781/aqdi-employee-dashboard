@@ -30,3 +30,22 @@ export function filterOrdersPageStatusItems(statusItems = []) {
     return { ...found, name: label };
   }).filter(Boolean);
 }
+
+/** Default chip on order list pages (مستلم). */
+export const DEFAULT_ORDERS_PAGE_STATUS_LABEL = "مستلم";
+
+export function findOrdersPageStatusIdByLabel(
+  statusItems = [],
+  label = DEFAULT_ORDERS_PAGE_STATUS_LABEL
+) {
+  const items = Array.isArray(statusItems) ? statusItems : [];
+  const found = items.find((item) => normalizeStatusName(item?.name) === label);
+  return found?.id ?? null;
+}
+
+export function getDefaultOrdersPageStatusId(statusItems = []) {
+  return findOrdersPageStatusIdByLabel(
+    statusItems,
+    DEFAULT_ORDERS_PAGE_STATUS_LABEL
+  );
+}

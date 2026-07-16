@@ -6,12 +6,12 @@ import {
   CONTRACT_PAID_QUERY_KEY,
   exportContractPaidToExcel,
   extractContractPaidRecord,
-  extractPaymentFromResponse,
   getContractPaidPeriodLabel,
   getContractPaidTypeLabel,
   normalizeContractPaidList,
 } from "@/components/Orders/contract-paid/contract-paid-utils";
 import PaymentLinkDialog from "@/components/Orders/shared/payment-link-dialog";
+import { fetchContractPaidPaymentLink } from "@/components/Orders/shared/payment-gateway";
 import { fetchAllPaginatedOrders } from "@/components/Orders/shared/orders-export";
 import Header from "@/components/home/Header";
 import Loader from "@/components/home/loader";
@@ -39,7 +39,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
+import SendOrderSmsButton, {
+  SMS_MESSAGE_API,
+} from "@/components/Orders/shared/send-order-sms-button";
 
 const PAYMENT_FILTERS = [
   { value: "", label: "الكل" },
@@ -79,6 +81,9 @@ export default function ContractPaidWrapper() {
     paymentUrl: "",
     cartAmount: null,
     notes: "",
+    alreadyPaid: false,
+    message: null,
+    payment: null,
   });
   const [loadingPaymentId, setLoadingPaymentId] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -170,22 +175,36 @@ export default function ContractPaidWrapper() {
   const handleOpenPaymentLink = async (record) => {
     setLoadingPaymentId(record.id);
     try {
-      const res = await axiosInstance.get(`${CONTRACT_PAID_API}/${record.id}`);
-      const { paymentUrl, cartAmount } = extractPaymentFromResponse(res.data);
-
-      if (!paymentUrl) {
-        toast.error("رابط الدفع غير متوفر لهذا السجل");
-        return;
-      }
+      const result = await fetchContractPaidPaymentLink(record.id, {
+        contractUuid: record.contract_uuid,
+      });
 
       setPaymentLink({
-        paymentUrl,
-        cartAmount: cartAmount ?? record.amount,
+        paymentUrl: result.paymentUrl || "",
+        cartAmount: result.cartAmount ?? record.amount,
         notes: record.notes || "",
+        alreadyPaid: result.alreadyPaid,
+        message: result.message,
+        payment: result.payment,
       });
       setPaymentDialogOpen(true);
+
+      if (result.alreadyPaid) {
+        refetch();
+      }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "تعذر جلب رابط الدفع");
+      const apiMessage =
+        error?.response?.data?.gateway_error || error?.response?.data?.message;
+      const looksLikeSuccess =
+        typeof apiMessage === "string" && /نجح|نجاح|success/i.test(apiMessage);
+
+      toast.error(
+        looksLikeSuccess
+          ? error?.message && !/نجح|نجاح|success/i.test(error.message)
+            ? error.message
+            : "تعذر جلب رابط الدفع"
+          : apiMessage || error?.message || "تعذر جلب رابط الدفع"
+      );
     } finally {
       setLoadingPaymentId(null);
     }
@@ -435,7 +454,11 @@ export default function ContractPaidWrapper() {
                     </td>
                     <td className="p-[15px_20px]" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
-                        <SendOrderSmsButton order={row} />
+                        <SendOrderSmsButton
+                          order={row}
+                          endpoint={SMS_MESSAGE_API}
+                          phone={row.customer_mobile}
+                        />
                         {!isPaid ? (
                           <Button
                             type="button"
@@ -481,6 +504,9 @@ export default function ContractPaidWrapper() {
         paymentUrl={paymentLink.paymentUrl}
         cartAmount={paymentLink.cartAmount}
         notes={paymentLink.notes}
+        alreadyPaid={paymentLink.alreadyPaid}
+        message={paymentLink.message}
+        payment={paymentLink.payment}
       />
 
       <Dialog

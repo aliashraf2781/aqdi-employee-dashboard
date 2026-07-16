@@ -53,6 +53,7 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
     countsLoading,
     appendStatusParam,
     resetStatusFilter,
+    statusFilterReady,
   } = useOrdersContractStatusFilter({
     countsBaseUrl: INCOMPLETE_ORDERS_API,
     countsExtraParams: `created_at=${createdAt}`,
@@ -109,6 +110,7 @@ export default function InCompletedOrdersAnalysisWrapper({ id }) {
       }
       return axiosInstance(appendStatusParam(url));
     },
+    enabled: statusFilterReady,
   });
 
   const orders = data?.data?.data?.items ?? [];

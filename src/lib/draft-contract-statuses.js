@@ -68,3 +68,105 @@ export function getOrderDraftContractNumber(orderData = {}) {
     ""
   );
 }
+
+function isTruthyFlag(value) {
+  return value === true || value === 1 || value === "1";
+}
+
+function textLooksLikeDraft(value) {
+  const text = String(value ?? "")
+    .trim()
+    .toLowerCase();
+  if (!text) return false;
+  return (
+    text === "draft" ||
+    text.includes("draft") ||
+    text.includes("مسود")
+  );
+}
+
+/** Detect draft-contract rows in mixed order lists / related contracts. */
+export function isDraftOrderRow(row = {}) {
+  if (!row) return false;
+
+  const summary = row.contract_summary ?? {};
+  const sources = [row, summary];
+
+  for (const item of sources) {
+    if (!item || typeof item !== "object") continue;
+
+    if (isTruthyFlag(item.is_draft) || isTruthyFlag(item.is_draft_contract)) {
+      return true;
+    }
+    if (isTruthyFlag(item.is_draft_order) || isTruthyFlag(item.from_draft)) {
+      return true;
+    }
+
+    if (
+      textLooksLikeDraft(item.order_type) ||
+      textLooksLikeDraft(item.type) ||
+      textLooksLikeDraft(item.source) ||
+      textLooksLikeDraft(item.category)
+    ) {
+      return true;
+    }
+
+    if (item.draft_contract_status_id || item.draft_contract_status?.id) {
+      return true;
+    }
+    if (item.draft_contract_status_name || item.draft_contract_status?.name) {
+      return true;
+    }
+
+    if (
+      textLooksLikeDraft(item.status?.name) ||
+      textLooksLikeDraft(item.contract_status_name) ||
+      textLooksLikeDraft(item.status_name)
+    ) {
+      return true;
+    }
+
+    if (
+      textLooksLikeDraft(item.instrument_type_key) ||
+      textLooksLikeDraft(item.instrument_type)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function parseHexColor(value = "") {
+  const hex = String(value).trim().replace(/^#/, "");
+  if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+    return {
+      r: parseInt(hex[0] + hex[0], 16),
+      g: parseInt(hex[1] + hex[1], 16),
+      b: parseInt(hex[2] + hex[2], 16),
+    };
+  }
+  if (/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return {
+      r: parseInt(hex.slice(0, 2), 16),
+      g: parseInt(hex.slice(2, 4), 16),
+      b: parseInt(hex.slice(4, 6), 16),
+    };
+  }
+  return null;
+}
+
+/** Soft row background tint from a draft status color. */
+export function getDraftRowHighlightStyle(color) {
+  const rgb = parseHexColor(color);
+  if (!rgb) {
+    return {
+      backgroundColor: "#FFFBEB",
+      boxShadow: "inset -3px 0 0 #F59E0B",
+    };
+  }
+  return {
+    backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`,
+    boxShadow: `inset -3px 0 0 ${color}`,
+  };
+}

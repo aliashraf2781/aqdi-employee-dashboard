@@ -4,6 +4,10 @@ import { Copy } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import SendOrderSmsButton from "@/components/Orders/shared/send-order-sms-button";
+import {
+  getDraftRowHighlightStyle,
+  isDraftOrderRow,
+} from "@/src/lib/draft-contract-statuses";
 
 export default function UserContractsTable({ contracts = [], userId = null }) {
   const tableHeaders = [
@@ -49,24 +53,40 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
           </thead>
           <tbody>
             {contracts.length > 0 ? (
-              contracts.map((contract) => (
+              contracts.map((contract) => {
+                const isDraft = isDraftOrderRow(contract);
+                const draftStyle = isDraft
+                  ? getDraftRowHighlightStyle("#F59E0B")
+                  : undefined;
+
+                return (
                 <tr
                   key={contract.id}
-                  className="border-b border-[#F5F5F5] last:border-0 hover:bg-[#fafafa] transition-all"
+                  style={draftStyle}
+                  className={`border-b border-[#F5F5F5] last:border-0 transition-all ${
+                    isDraft ? "hover:brightness-[0.98]" : "hover:bg-[#fafafa]"
+                  }`}
                 >
                   <td className="p-[15px_20px]">
-                    <div className="flex items-center gap-2">
-                      <span className="text-black text-xs font-bold">{contract.uuid || "—"}</span>
-                      {contract.uuid && (
-                        <Copy
-                          onClick={() => {
-                            navigator.clipboard.writeText(String(contract.uuid));
-                            toast.success("تم نسخ رقم الطلب");
-                          }}
-                          size={14}
-                          className="text-[#A3A3A3] cursor-pointer hover:text-brand-main"
-                        />
-                      )}
+                    <div className="flex flex-col items-start gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-black text-xs font-bold">{contract.uuid || "—"}</span>
+                        {contract.uuid && (
+                          <Copy
+                            onClick={() => {
+                              navigator.clipboard.writeText(String(contract.uuid));
+                              toast.success("تم نسخ رقم الطلب");
+                            }}
+                            size={14}
+                            className="text-[#A3A3A3] cursor-pointer hover:text-brand-main"
+                          />
+                        )}
+                      </div>
+                      {isDraft ? (
+                        <span className="rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-[10px] font-bold text-[#B45309] ring-1 ring-[#F59E0B]/40">
+                          مسودة
+                        </span>
+                      ) : null}
                     </div>
                   </td>
                   <td className="p-[15px_20px] text-black text-[13px]">{contract.contract_type || "—"}</td>
@@ -115,7 +135,8 @@ export default function UserContractsTable({ contracts = [], userId = null }) {
                     </div>
                   </td>
                 </tr>
-              ))
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={tableHeaders.length} className="text-center p-8 text-[#A3A3A3] text-sm">

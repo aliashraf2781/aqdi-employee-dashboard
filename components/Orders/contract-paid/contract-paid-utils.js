@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import { normalizePaymentLinkPayload } from "@/components/Orders/shared/payment-gateway";
 
 export const CONTRACT_PAID_API = "/admin/contract-paid-by-employees";
 export const CONTRACT_PAID_QUERY_KEY = "contractPaidByEmployees";
@@ -23,14 +24,18 @@ export function extractContractPaidRecord(response) {
 }
 
 export function extractPaymentFromResponse(response) {
-  const payload = response?.data?.data ?? response?.data ?? response;
-  const paymentUrl = payload?.payment_url || payload?.Payment_url;
+  const root = response?.data ?? response;
+  const nested = root?.data && typeof root.data === "object" ? root.data : null;
+  const normalized = normalizePaymentLinkPayload(root);
 
   return {
-    paymentUrl,
-    cartAmount: payload?.cart_amount ?? payload?.record?.amount,
-    record: payload?.record ?? payload,
-    contractUuid: payload?.contract_uuid ?? payload?.record?.contract_uuid,
+    paymentUrl: normalized.paymentUrl,
+    alreadyPaid: normalized.alreadyPaid,
+    message: normalized.message,
+    cartAmount: normalized.cartAmount,
+    record: nested?.record ?? nested ?? root?.record ?? root,
+    contractUuid: normalized.contractUuid,
+    payment: normalized.payment,
   };
 }
 

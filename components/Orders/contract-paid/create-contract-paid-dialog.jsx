@@ -5,15 +5,11 @@
 import { Button } from "@/components/ui/button";
 
 import {
-
   Dialog,
-
   DialogContent,
-
   DialogHeader,
-
+  DialogTitle,
   DialogTrigger,
-
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
@@ -93,6 +89,9 @@ export default function CreateContractPaidDialog() {
     paymentUrl: "",
     cartAmount: null,
     notes: "",
+    alreadyPaid: false,
+    message: null,
+    payment: null,
   });
   const queryClient = useQueryClient();
 
@@ -129,9 +128,16 @@ export default function CreateContractPaidDialog() {
         notes: notes.trim() || undefined,
       }),
     onSuccess: (res) => {
-      const { paymentUrl, cartAmount, record } = extractPaymentFromResponse(res.data);
+      const {
+        paymentUrl,
+        cartAmount,
+        record,
+        alreadyPaid,
+        message,
+        payment,
+      } = extractPaymentFromResponse(res.data);
 
-      if (!paymentUrl) {
+      if (!paymentUrl && !alreadyPaid) {
         toast.error(res?.data?.message || "لم يتم إرجاع رابط الدفع");
         return;
       }
@@ -139,13 +145,20 @@ export default function CreateContractPaidDialog() {
       const successNotes = notes.trim() || record?.notes || "";
       const successAmount = cartAmount ?? Number(amount) ?? record?.amount ?? null;
 
-      toast.success(res?.data?.message || "تم إنشاء العقد ورابط الدفع بنجاح");
+      toast.success(
+        alreadyPaid
+          ? message || "تم دفع هذا العقد بالفعل"
+          : res?.data?.message || "تم إنشاء العقد ورابط الدفع بنجاح"
+      );
       setOpen(false);
       resetForm();
       setPaymentLink({
-        paymentUrl,
+        paymentUrl: paymentUrl || "",
         cartAmount: successAmount,
         notes: successNotes,
+        alreadyPaid: Boolean(alreadyPaid),
+        message,
+        payment,
       });
       setPaymentDialogOpen(true);
       queryClient.invalidateQueries({ queryKey: [CONTRACT_PAID_QUERY_KEY] });
@@ -273,17 +286,11 @@ export default function CreateContractPaidDialog() {
           <DialogHeader>
 
             <div className="flex items-center justify-between border-b pb-6">
-
-              <h2 className="text-xl font-bold">إنشاء عقد مدفوع</h2>
-
+              <DialogTitle className="text-xl font-bold m-0">إنشاء عقد مدفوع</DialogTitle>
               <Button onClick={() => setOpen(false)}>
-
                 <X className="w-4 h-4" />
-
               </Button>
-
             </div>
-
 
 
             <div className="space-y-4 text-right">
@@ -531,6 +538,9 @@ export default function CreateContractPaidDialog() {
         paymentUrl={paymentLink.paymentUrl}
         cartAmount={paymentLink.cartAmount}
         notes={paymentLink.notes}
+        alreadyPaid={paymentLink.alreadyPaid}
+        message={paymentLink.message}
+        payment={paymentLink.payment}
       />
     </>
   );

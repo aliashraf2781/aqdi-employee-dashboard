@@ -47,6 +47,7 @@ export default function AllOrdersWrapper() {
     countsLoading,
     appendStatusParam,
     resetStatusFilter,
+    statusFilterReady,
   } = useOrdersContractStatusFilter({
     countsBaseUrl: "/admin/orders",
   });
@@ -83,6 +84,7 @@ export default function AllOrdersWrapper() {
       }
       return axiosInstance(appendStatusParam(url));
     },
+    enabled: statusFilterReady,
   });
   console.log(data);
 

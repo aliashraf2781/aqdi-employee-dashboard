@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { axiosInstance } from '@/src/utils/axios'
@@ -10,9 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import ReturnRequestDialog from "./return-request-dialog"
 import {
   canRequestOrderReturn,
+  getOrderContractStatusDisplay,
   isReturnContractStatus,
   normalizeOrderForReturnRequest,
 } from "@/components/analysis/returned/refund-contract-utils"
+import { openDialogAfterMenuClose } from "@/src/lib/open-dialog-after-menu-close"
 
 export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -25,6 +27,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   const queryClient = useQueryClient()
   const returnOrder = normalizeOrderForReturnRequest(order, orderId)
   const showReturnRequest = canRequestOrderReturn(returnOrder)
+  const currentStatus = getOrderContractStatusDisplay(order ?? returnOrder)
 
   function getStatus() {
     return axiosInstance("/admin/contract-statuses")
@@ -33,6 +36,17 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
     queryKey: ["status"],
     queryFn: getStatus
   })
+
+  const statusItems = useMemo(() => {
+    const items = statusData?.data?.data?.items ?? []
+    const currentId = currentStatus?.id
+
+    if (currentId == null || currentId === "") return items
+
+    return items.filter(
+      (item) => String(item?.id) !== String(currentId)
+    )
+  }, [statusData, currentStatus?.id])
 
   function addStatus() {
     return axiosInstance.post("/admin/contract-statuses", newCategory)
@@ -79,12 +93,16 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
   })
 
   const openReturnDialog = () => {
-    setReturnDialogOpen(true)
+    openDialogAfterMenuClose(() => setReturnDialogOpen(true))
   }
 
   const handleStatusClick = (status) => {
     // استرجاع: افتح النموذج أولاً — تغيير الحالة يتم بعد نجاح إرسال الطلب
-    if (isReturnContractStatus(status) && showReturnRequest) {
+    if (isReturnContractStatus(status)) {
+      if (!showReturnRequest) {
+        toast.info("يوجد طلب استرجاع مسبقاً لهذا الطلب")
+        return
+      }
       openReturnDialog()
       return
     }
@@ -94,7 +112,7 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
 
   return (
     <>
-    <DropdownMenu dir="rtl">
+    <DropdownMenu dir="rtl" modal={false}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
@@ -113,10 +131,12 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
         <DropdownMenuLabel>تغيير حالة الطلب</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-[#F5F5F5] my-1" />
 
-        {statusData?.data?.data?.items?.map((item) => (
+        {statusItems.map((item) => (
           <div key={item?.id}>
             <DropdownMenuItem
-              onClick={() => handleStatusClick(item)}
+              onSelect={() => {
+                handleStatusClick(item)
+              }}
               disabled={changeStatusPending}
               className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2"
             >
@@ -132,7 +152,9 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
         ))}
 
         <DropdownMenuItem
-          onClick={() => setIsAddModalOpen(true)}
+          onSelect={() => {
+            openDialogAfterMenuClose(() => setIsAddModalOpen(true))
+          }}
           className="cursor-pointer hover:bg-[#F9F9F9] rounded-lg p-2"
         >
           <Plus className="size-4" />
@@ -145,8 +167,8 @@ export default function ChangeStatusDialog({ orderId, order, queryKey }) {
         <DropdownMenuItem
           className="cursor-pointer hover:bg-[#FFF5F5] text-red-600 rounded-lg p-2"
           disabled={isDeleting}
-          onClick={(e) => {
-            e.stopPropagation()
+          onSelect={(e) => {
+            e.stopPropagation?.()
             deleteOrder()
           }}
         >
